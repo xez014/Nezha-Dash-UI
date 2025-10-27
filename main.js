@@ -56,12 +56,14 @@
     }
   }
 
-  // 确保在DOM加载完成后执行
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
+  // 立即执行初始化
+  // 由于是动态加载，脚本执行时 DOM 通常已经准备好了
+  console.log('📦 main.js 已加载，准备初始化...');
+  
+  // 使用 setTimeout 确保所有前置模块都已加载
+  setTimeout(function() {
     init();
-  }
+  }, 100);
 
   // 将主函数暴露到全局作用域，方便调试
   window.NezhaUI = {
