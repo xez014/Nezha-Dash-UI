@@ -107,4 +107,3 @@ function initFireworks() {
     if (!animationFrameId) animate();
   });
 }
-
