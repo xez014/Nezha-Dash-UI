@@ -6,7 +6,7 @@
  */
 
 // ------------------ 插图配置 ------------------
-window.CustomIllustration = "https://imgr2.952536.xyz/Hexo/Wallpaper/Candice.png"; // 【自定义插图】右下角的插图URL (需禁用人物动画)
+window.CustomIllustration = "https://cdn.jsdelivr.net/gh/kamanfaiz/NeZha-UI@main/img/Candice.png"; // 【自定义插图】右下角的插图URL (需禁用人物动画)
 
 function initIllustration() {
   if (!window.CustomIllustration || window.CustomIllustration.trim() === "")
