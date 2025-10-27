@@ -8,7 +8,7 @@
 // ------------------ 下雨特效配置 ------------------
 window.EnableRainEffect = true; // 【下雨特效】是否启用背景下雨特效 (true/false)
 
-function initRainEffect() {
+function initRain() {
   if (!window.EnableRainEffect) return;
 
   const canvas = document.createElement("canvas");
@@ -113,4 +113,3 @@ function initRainEffect() {
   }
   animate();
 }
-
