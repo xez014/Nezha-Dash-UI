@@ -23,12 +23,12 @@
       initIllustration();
     }
 
-    if (typeof initFireworks === "function") {
-      initFireworks();
-    }
-
     if (typeof initVisitorInfo === "function") {
       initVisitorInfo();
+    }
+
+    if (typeof initFireworks === "function") {
+      initFireworks();
     }
 
     if (typeof initRainEffect === "function") {
