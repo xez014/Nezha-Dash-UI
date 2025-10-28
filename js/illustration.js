@@ -245,3 +245,12 @@ function initIllustration() {
     setTimeout(() => findAndAttach(), 150); // 减少延迟时间为150ms，让动画更快开始
   });
 }
+
+// ================================================================
+// 自动初始化
+// ================================================================
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initIllustration);
+} else {
+  initIllustration();
+}
