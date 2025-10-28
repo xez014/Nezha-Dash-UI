@@ -74,3 +74,12 @@ function initCustomLinks() {
     console.error("初始化自定义链接图标失败:", e);
   }
 }
+
+// ================================================================
+// 自动初始化
+// ================================================================
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initCustomLinks);
+} else {
+  initCustomLinks();
+}
