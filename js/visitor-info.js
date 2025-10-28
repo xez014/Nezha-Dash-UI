@@ -6,7 +6,7 @@
  */
 
 // ------------------ 访客信息配置 ------------------
-window.VisitorInfoAutoHideDelay = 2600; // 【访客信息自动隐藏】首次加载时自动隐藏的延迟时间 (毫秒)
+window.VisitorInfoAutoHideDelay = 2600; // 首次加载时自动隐藏的延迟时间 (毫秒)
 
 // ------------------ 工具函数 ------------------
 /**
@@ -404,4 +404,13 @@ function initVisitorInfo() {
       }, window.VisitorInfoAutoHideDelay || 2000); // 使用配置的时间
     }
   }
+}
+
+// ================================================================
+// 自动初始化
+// ================================================================
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initVisitorInfo);
+} else {
+  initVisitorInfo();
 }
