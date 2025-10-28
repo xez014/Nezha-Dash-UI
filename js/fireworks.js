@@ -1,12 +1,12 @@
 /**
  * =================================================================
  * Nezha-UI 鼠标点击烟花特效模块
- * @description 创建轻量级、高性能的点击烟花效果，代码更紧凑。
+ * @description 创建轻量级、高性能的点击烟花效果。
  * =================================================================
  */
 
 // ------------------ 烟花特效配置 ------------------
-window.EnableFireworks = true; // 【点击烟花】是否启用鼠标点击烟花特效 (true/false)
+window.EnableFireworks = true; // 是否启用鼠标点击烟花特效 (true/false)
 
 function initFireworks() {
   if (!window.EnableFireworks) return;
