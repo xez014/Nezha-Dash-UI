@@ -1,70 +1,171 @@
-/**
+  /**
  * =================================================================
- * Nezha-UI 音乐播放器UI模块
- * @description 浮动音乐播放器UI外观，可自定义连接其他播放器
+ * Nezha-UI 音乐播放器模块
+ * @description 对接老王eooce的音乐播放器项目，创建音乐播放器，强烈推荐老王音乐播放器，感谢老王！
  * =================================================================
  */
 
-// ------------------ 音乐播放器配置 ------------------
-window.EnableMusicPlayer = false; // 【音乐播放器】是否启用音乐播放器UI (true/false)
-window.MusicPlayerDefaultSide = "left"; // 【默认位置】left 或 right
-window.MusicPlayerBallSize = 60; // 【球体大小】浮动球的直径(px)
-window.MusicPlayerAutoCollapse = 3000; // 【自动收起】展开后多久自动收起(毫秒)，0为不自动收起
-window.MusicPlayerCoverImage = "https://via.placeholder.com/60"; // 【封面图片】默认封面图片URL
-window.MusicPlayerTitle = "音乐播放器"; // 【标题】默认显示标题
-window.MusicPlayerArtist = "Nezha-UI"; // 【艺术家】默认显示艺术家
+  /**
+   * ================================================================
+   * 音乐播放器 - 代码概览
+   * ================================================================
+   * 
+   * 代码结构说明：
+   * 
+   * 第一部分：全局配置变量
+   * 第二部分：CSS 样式定义
+   * 第三部分：核心变量声明
+   * 第四部分：UI 元素创建
+   * 第五部分：播放列表功能
+   * 第六部分：播放控制功能
+   * 第七部分：UI 交互功能
+   * 第八部分：主题适配功能
+   * 第九部分：事件绑定
+   * 第十部分：初始化执行
+   * ================================================================
+   */
 
-/**
- * 播放器状态回调（由外部播放器调用）
- * 使用方法：
- * 1. 播放时调用：window.MusicPlayerUI.setPlaying(true);
- * 2. 暂停时调用：window.MusicPlayerUI.setPlaying(false);
- * 3. 更新信息：window.MusicPlayerUI.updateInfo({ title: "歌名", artist: "歌手", cover: "封面URL" });
- */
+  // ================================================================
+  // 第一部分：全局配置变量
+  // ================================================================
+  
+  // 音乐播放器基础配置
+  window.EnableMusicPlayer = true; // 是否启用音乐播放器（true/false）
+  window.MusicPlayerBallSize = 60; // 悬浮球尺寸（单位：像素）
+  window.MusicPlayerAutoCollapse = 2600; // 自动收起面板的延迟时间（单位：毫秒）
+  window.MusicPlayerTitle = "Faiz's Music Player"; // 音乐播放器标题/艺术家名称
+  window.MusicPlayerAPIUrl = "https://music.588945.xyz/api/music/list"; // 音乐列表API地址，自建播放器将域名换成自己的即可
+  window.MusicPlayerGitHubUrl = "https://github.com/eooce/music-player"; // GitHub仓库链接（留空则不显示图标）
+  window.MusicPlayerDefaultVolume = 0.2; // 默认音量（范围：0-1）
+  
+  // 封面配置
+  window.MusicPlayerCoverList = [ // 封面图片列表（随机分配给歌曲）
+    "https://nzr2.952536.xyz/Cover/NumberOne.jpg",
+    "https://nzr2.952536.xyz/Cover/千の夜をこえて.jpg",
+    "https://nzr2.952536.xyz/Cover/heretostay.jpg",
+    "https://nzr2.952536.xyz/Cover/オレンジ.jpg",
+    "https://nzr2.952536.xyz/Cover/BLUE.jpg",
+    "https://nzr2.952536.xyz/Cover/velonica.jpg",
+    "https://nzr2.952536.xyz/Cover/chAngE.jpg",
+    "https://nzr2.952536.xyz/Cover/最果て.jpg",
+    "https://nzr2.952536.xyz/Cover/MONOCHROME.jpg",
+    "https://nzr2.952536.xyz/Cover/Rapport.jpg",
+  ];
+  
+  // 视觉效果配置
+  window.MusicPlayerRotationSpeed = 5; // 唱片旋转速度（数值越大转速越慢，单位：秒/圈）
+  window.MusicPlayerStrokeWidth = 4.5; // 悬浮球描边宽度（单位：像素，0表示无描边）
+  window.MusicPlayerStrokeColor = ""; // 悬浮球描边颜色（留空则自动适配主题：暗色模式黑色，亮色模式白色）
+  window.MusicPlayerOpacity = 0.5; // 播放器面板不透明度（范围：0-1）
+  
+  // 音波效果配置
+  window.MusicPlayerWaveStrokeWidth = "2.8px"; // PC端音波圆环宽度
+  window.MusicPlayerWaveMobileStrokeWidth = "1.8px"; // 移动端音波圆环宽度
+  window.MusicPlayerWaveSpeed = 2.0; // 音波扩散速度（单位：秒，完整扩散一轮所需时间）
+  window.MusicPlayerWaveScale = 1.6; // 音波扩散比例（最大扩散倍数）
 
-function initMusicPlayer() {
-  if (!window.EnableMusicPlayer) {
-    return;
-  }
+  // ================================================================
+  // 主函数：音乐播放器初始化
+  // ================================================================
+  function initMusicPlayer() {
+    if (!window.EnableMusicPlayer) return;
 
-  // 注入样式
-  const styleSheet = document.createElement("style");
-  styleSheet.textContent = `
+    // ================================================================
+    // 第二部分：CSS 样式定义
+    // ================================================================
+    const styleSheet = document.createElement("style");
+    styleSheet.textContent = `
+    /* ==================== 动画定义 ==================== */
     @keyframes spin {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
 
+    /* 音波扩散动画 */
     @keyframes soundwave {
       from {
         transform: scale(1);
-        opacity: 0.8;
+        opacity: 0.9;
       }
       to {
-        transform: scale(1.6);
+        transform: scale(var(--wave-scale, 1.6));
         opacity: 0;
       }
     }
 
+    /* ==================== 音波容器 ==================== */
+    /* 音波容器 - 独立定位在悬浮球下方 */
+    .wave-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0; /* 位于主面板下方 */
+    }
+
+    /* 音波圆环 */
+    .wave {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: var(--wave-stroke-width, 1.8px) solid var(--wave-color);
+      pointer-events: none;
+      display: none; /* 默认隐藏 */
+    }
+
+    /* 仅在收起状态且播放时显示音波动画 */
+    .music-player-container:not(.expanded).playing .wave {
+      display: block;
+      animation: soundwave var(--wave-speed, 2.4s) infinite ease-out;
+    }
+
+    /* ==================== 主容器 ==================== */
     .music-player-container {
       position: fixed;
+      left: 20px;
+      bottom: 20px;
       z-index: 1050;
       display: flex;
-      align-items: center;
-      transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      overflow: hidden;
+      flex-direction: column;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      overflow: visible; /* 允许音波超出容器 */
       border-radius: 50%;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(10px);
-      cursor: move;
+      background: rgba(255, 255, 255, 0.8); /* 默认值，会被 JavaScript 动态更新 */
     }
 
     .music-player-container.expanded {
-      border-radius: 25px;
+      border-radius: 15px;
+      width: auto !important;
+      height: auto !important;
     }
 
-    .music-album-wrapper {
+    /* ==================== 主内容区 ==================== */
+    .music-player-main {
+      display: flex;
+      align-items: center;
+      padding: 0;
+      gap: 0;
+      border-radius: inherit;
+      position: relative;
+      background: inherit;
+      z-index: 1; /* 位于音波之上 */
+      overflow: hidden; /* 裁剪内容为圆形 */
+    }
+
+    .music-player-container.expanded .music-player-main {
+      padding: 10px;
+      gap: 12px;
+      overflow: visible; /* 展开时允许内容溢出 */
+    }
+
+    /* ==================== 悬浮球封面（收起状态） ==================== */
+    .music-ball-album {
       position: relative;
       flex-shrink: 0;
       cursor: pointer;
@@ -72,25 +173,128 @@ function initMusicPlayer() {
       align-items: center;
       justify-content: center;
       border-radius: 50%;
+      overflow: hidden; /* 裁剪为圆形 */
+      background: #000; /* 无封面时显示纯黑色 */
     }
 
-    .music-album-image {
-      object-fit: cover;
-      border-radius: 50%;
-      transition: transform 0.3s;
+    .music-player-container.expanded .music-ball-album {
+      display: none;
     }
 
-    .music-album-image.playing {
-      animation: spin 10s linear infinite;
-    }
-
-    .music-overlay {
+    .music-ball-rotating {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.4);
+    }
+
+    .music-ball-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      object-fit: cover;
+      object-position: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    .music-ball-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .music-ball-album:hover .music-ball-overlay {
+      opacity: 1;
+    }
+
+    /* ==================== 展开状态封面（唱片效果） ==================== */
+    .music-expanded-album {
+      position: relative;
+      flex-shrink: 0;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #000; /* 无封面时显示纯黑色 */
+    }
+
+    .music-player-container.expanded .music-expanded-album {
+      display: flex;
+    }
+
+    .music-expanded-rotating {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.1s linear;
+    }
+
+    .music-expanded-rotating::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 88deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.4) 8%,
+        transparent 18%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.4) 58%,
+        transparent 68%
+      );
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .music-expanded-base {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: #1a1a1a;
+      border-radius: 50%;
+      z-index: 0;
+    }
+
+    .music-expanded-image {
+      object-fit: cover;
+      object-position: center;
+      border-radius: 50%;
+      width: 55%;
+      height: 55%;
+      position: relative;
+      z-index: 2;
+    }
+
+    .music-expanded-overlay {
+      position: absolute;
+      top: 22.5%;
+      left: 22.5%;
+      width: 55%;
+      height: 55%;
+      background: rgba(0,0,0,0.3);
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -99,9 +303,10 @@ function initMusicPlayer() {
       opacity: 0;
       transition: opacity 0.3s;
       pointer-events: none;
+      z-index: 2;
     }
 
-    .music-album-wrapper:hover .music-overlay {
+    .music-expanded-album:hover .music-expanded-overlay {
       opacity: 1;
     }
 
@@ -115,303 +320,1081 @@ function initMusicPlayer() {
       border-radius: 50%;
     }
 
-    .music-wave {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      border: 2px solid rgba(255, 255, 255, 0.6);
-      animation: soundwave 2s infinite ease-out;
-      display: none;
-    }
-
-    .music-player-container.playing .music-wave {
-      display: block;
-    }
-
-    .music-controls {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 0 15px;
+    /* ==================== 信息和控制区域 ==================== */
+    .music-info-section {
+      flex: 1;
+      min-width: fit-content;
       opacity: 0;
-      width: 0;
-      transition: all 0.4s;
-      white-space: nowrap;
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+      overflow: visible;
+      align-items: stretch;
     }
 
-    .music-player-container.expanded .music-controls {
+    .music-player-container.expanded .music-info-section {
       opacity: 1;
-      width: auto;
+      display: flex;
     }
 
-    .music-info {
+    .music-track-info {
       display: flex;
       flex-direction: column;
-      max-width: 150px;
-      overflow: hidden;
+      gap: 2px;
+      align-self: stretch;
     }
 
     .music-title {
-      color: white;
+      color: #333;
       font-size: 14px;
       font-weight: 600;
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .music-artist {
-      color: rgba(255, 255, 255, 0.7);
+      color: #666;
       font-size: 12px;
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ==================== 进度条 ==================== */
+    .music-progress-section {
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      opacity: 0;
+      align-self: stretch;
+    }
+
+    .music-player-container.expanded .music-progress-section {
+      display: flex;
+      opacity: 1;
+    }
+
+    .music-progress-bar {
+      width: 100%;
+      height: 4px;
+      background: var(--progress-bg, rgba(0, 0, 0, 0.1));
+      border-radius: 2px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .music-progress-fill {
+      height: 100%;
+      background: var(--progress-fill, rgba(36, 44, 54, 0.8));
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.1s linear;
+    }
+
+    .music-time {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #666;
+      padding: 0 2px;
+    }
+
+    /* ==================== 控制按钮 ==================== */
+    .music-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+      overflow: visible;
+      align-self: stretch;
     }
 
     .music-btn {
       background: none;
       border: none;
-      color: white;
+      color: #333;
       cursor: pointer;
       padding: 0;
-      font-size: 18px;
-      opacity: 0.8;
-      transition: opacity 0.3s, transform 0.2s;
+      font-size: 16px;
+      opacity: 0.7;
+      transition: all 0.3s;
       display: flex;
       align-items: center;
       justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      flex-shrink: 0;
     }
 
     .music-btn:hover {
       opacity: 1;
       transform: scale(1.1);
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    /* GitHub链接图标 */
+    .music-github-link {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+      opacity: 0.5;
+      transition: all 0.3s;
+      cursor: pointer;
+      border-radius: 50%;
+      z-index: 5;
+      text-decoration: none;
+    }
+
+    .music-github-link:hover {
+      opacity: 1;
+      transform: scale(1.15);
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .music-github-link i {
+      font-size: 18px;
+    }
+
+    .music-btn.play-btn {
+      font-size: 20px;
+      width: 36px;
+      height: 36px;
+      opacity: 1;
+    }
+
+    /* ==================== 音量控制 ==================== */
+    .music-volume-control {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .music-volume-slider {
+      width: 60px;
+      display: flex;
+      align-items: center;
+    }
+
+    .music-volume-slider input {
+      width: 100%;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      border-radius: 2px;
+      background: linear-gradient(
+        to right,
+        var(--slider-fill, #242c36) 0%,
+        var(--slider-fill, #242c36) var(--slider-percent, 50%),
+        var(--slider-bg, rgba(0, 0, 0, 0.1)) var(--slider-percent, 50%),
+        var(--slider-bg, rgba(0, 0, 0, 0.1)) 100%
+      );
+      outline: none;
+    }
+
+    .music-volume-slider input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--slider-thumb, #242c36);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .music-volume-slider input::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .music-volume-slider input::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--slider-thumb, #242c36);
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .music-volume-slider input::-moz-range-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .music-volume-slider input::-moz-range-track {
+      height: 4px;
+      border-radius: 2px;
+      background: transparent;
+    }
+
+    /* ==================== 播放列表 ==================== */
+    .music-playlist {
+      position: absolute;
+      width: 280px;
+      background: var(--playlist-bg, rgba(255, 255, 255, 0.95));
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border-radius: 10px;
+      overflow: hidden;
+      opacity: 0;
+      transform: scale(0.95) translateY(10px);
+      transform-origin: bottom center;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+      z-index: 1051;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .music-playlist.show {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      pointer-events: auto;
+    }
+
+    .music-playlist-inner {
+      max-height: 250px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .music-playlist-header {
+      padding: 12px;
+      border-bottom: 1px solid var(--playlist-border, rgba(0, 0, 0, 0.08));
+      font-weight: 600;
+      color: var(--playlist-header-text, #333);
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      background: var(--playlist-header-bg, rgba(255, 255, 255, 0.98));
+      backdrop-filter: blur(10px);
+      z-index: 1;
+    }
+
+    .music-playlist-close {
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+      font-size: 18px;
+    }
+
+    .music-playlist-close:hover {
+      opacity: 1;
+    }
+
+    .music-playlist-item {
+      padding: 10px 12px;
+      color: var(--playlist-item-text, #555);
+      font-size: 13px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--playlist-item-border, rgba(0, 0, 0, 0.05));
+      transition: background 0.2s;
+    }
+
+    .music-playlist-item:last-child {
+      border-bottom: none;
+    }
+
+    .music-playlist-item:hover {
+      background: var(--playlist-item-hover, rgba(0, 0, 0, 0.05));
+    }
+
+    .music-playlist-item.active {
+      background: var(--playlist-item-active-bg, rgba(0, 0, 0, 0.08));
+      color: var(--playlist-item-active-text, #333);
+      font-weight: 600;
+    }
+
+    .music-playlist-inner::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .music-playlist-inner::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .music-playlist-inner::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 3px;
+    }
+
+    .music-playlist-inner::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.15);
     }
   `;
-  document.head.appendChild(styleSheet);
+    document.head.appendChild(styleSheet);
 
-  // 变量初始化
-  let isPlaying = false;
-  let isExpanded = false;
-  let currentSide = window.MusicPlayerDefaultSide || "left";
-  const ballSize = window.MusicPlayerBallSize || 60;
-  let autoCollapseTimer = null;
+    // ================================================================
+    // 第三部分：核心变量声明
+    // ================================================================
+    
+    // 播放状态变量
+    let isPlaying = false;
+    let isExpanded = false;
+    let showPlaylist = false;
+    let playlist = [];
+    let currentIndex = 0;
+    
+    // 动画相关变量
+    let rotationAngle = 0;
+    let animationFrameId = null;
+    
+    // 定时器变量
+    let autoCollapseTimer = null;
+    
+    // 音量控制变量
+    let lastVolume = 0.5;
+    
+    // 尺寸配置
+    const ballSize = window.MusicPlayerBallSize || 60;
+    
+    // 音频对象
+    const audio = new Audio();
+    audio.volume = window.MusicPlayerDefaultVolume || 0.5;
 
-  // 创建UI元素
-  const container = document.createElement("div");
-  container.className = "music-player-container";
-  container.style.width = `${ballSize}px`;
-  container.style.height = `${ballSize}px`;
-  container.style[currentSide] = "20px";
-  container.style.bottom = "80px";
-  document.body.appendChild(container);
-
-  // 封面区域
-  const albumWrapper = document.createElement("div");
-  albumWrapper.className = "music-album-wrapper";
-  albumWrapper.style.width = `${ballSize}px`;
-  albumWrapper.style.height = `${ballSize}px`;
-
-  const albumImage = document.createElement("img");
-  albumImage.className = "music-album-image";
-  albumImage.style.width = `${ballSize}px`;
-  albumImage.style.height = `${ballSize}px`;
-  albumImage.src = window.MusicPlayerCoverImage;
-
-  const overlay = document.createElement("div");
-  overlay.className = "music-overlay";
-  overlay.innerHTML = '<i class="iconfont icon-play" style="font-size: 24px;"></i>';
-
-  // 音波效果
-  const waveContainer = document.createElement("div");
-  waveContainer.className = "music-wave-container";
-  for (let i = 0; i < 3; i++) {
-    const wave = document.createElement("div");
-    wave.className = "music-wave";
-    wave.style.animationDelay = `${i * 0.6}s`;
-    waveContainer.appendChild(wave);
-  }
-
-  albumWrapper.append(albumImage, overlay, waveContainer);
-
-  // 控制面板
-  const controls = document.createElement("div");
-  controls.className = "music-controls";
-
-  const musicInfo = document.createElement("div");
-  musicInfo.className = "music-info";
-  musicInfo.innerHTML = `
-    <div class="music-title">${window.MusicPlayerTitle}</div>
-    <div class="music-artist">${window.MusicPlayerArtist}</div>
-  `;
-
-  const prevBtn = document.createElement("button");
-  prevBtn.className = "music-btn";
-  prevBtn.innerHTML = '<i class="iconfont icon-prev"></i>';
-  prevBtn.title = "上一曲";
-
-  const playBtn = document.createElement("button");
-  playBtn.className = "music-btn";
-  playBtn.innerHTML = '<i class="iconfont icon-play"></i>';
-  playBtn.title = "播放/暂停";
-
-  const nextBtn = document.createElement("button");
-  nextBtn.className = "music-btn";
-  nextBtn.innerHTML = '<i class="iconfont icon-next"></i>';
-  nextBtn.title = "下一曲";
-
-  controls.append(musicInfo, prevBtn, playBtn, nextBtn);
-  container.append(albumWrapper, controls);
-
-  // 功能函数
-  function setPlaying(playing) {
-    isPlaying = playing;
-    if (playing) {
-      container.classList.add("playing");
-      albumImage.classList.add("playing");
-      playBtn.innerHTML = '<i class="iconfont icon-pause"></i>';
-      overlay.innerHTML = '<i class="iconfont icon-pause" style="font-size: 24px;"></i>';
-    } else {
-      container.classList.remove("playing");
-      albumImage.classList.remove("playing");
-      playBtn.innerHTML = '<i class="iconfont icon-play"></i>';
-      overlay.innerHTML = '<i class="iconfont icon-play" style="font-size: 24px;"></i>';
-    }
-  }
-
-  function updateInfo(info) {
-    if (info.title) {
-      musicInfo.querySelector(".music-title").textContent = info.title;
-    }
-    if (info.artist) {
-      musicInfo.querySelector(".music-artist").textContent = info.artist;
-    }
-    if (info.cover) {
-      albumImage.src = info.cover;
-    }
-  }
-
-  function expandPlayer() {
-    isExpanded = true;
-    container.classList.add("expanded");
-    container.style.width = "auto";
-
-    if (window.MusicPlayerAutoCollapse > 0) {
-      clearTimeout(autoCollapseTimer);
-      autoCollapseTimer = setTimeout(collapsePlayer, window.MusicPlayerAutoCollapse);
-    }
-  }
-
-  function collapsePlayer() {
-    isExpanded = false;
-    container.classList.remove("expanded");
+    // ================================================================
+    // 第四部分：UI 元素创建
+    // ================================================================
+    
+    // 4.1 创建主容器
+    const container = document.createElement("div");
+    container.className = "music-player-container";
     container.style.width = `${ballSize}px`;
-    clearTimeout(autoCollapseTimer);
+    container.style.height = `${ballSize}px`;
+    document.body.appendChild(container);
+
+    // 4.2 创建主内容区域
+    const mainSection = document.createElement("div");
+    mainSection.className = "music-player-main";
+
+    // 4.3 创建 GitHub 链接图标
+    let githubLink = null;
+    if (window.MusicPlayerGitHubUrl && window.MusicPlayerGitHubUrl.trim() !== "") {
+      githubLink = document.createElement("a");
+      githubLink.className = "music-github-link";
+      githubLink.href = window.MusicPlayerGitHubUrl;
+      githubLink.target = "_blank";
+      githubLink.rel = "noopener noreferrer";
+      githubLink.title = "View on GitHub";
+      githubLink.innerHTML = '<i class="iconfont icon-github"></i>';
+      githubLink.style.display = "none";
+      githubLink.onclick = (e) => e.stopPropagation();
+      mainSection.appendChild(githubLink);
+    }
+
+    // 4.4 创建悬浮球封面区域（收起状态）
+    const ballAlbum = document.createElement("div");
+    ballAlbum.className = "music-ball-album";
+    ballAlbum.style.width = `${ballSize}px`;
+    ballAlbum.style.height = `${ballSize}px`;
+
+    const ballRotating = document.createElement("div");
+    ballRotating.className = "music-ball-rotating";
+
+    const ballImage = document.createElement("img");
+    ballImage.className = "music-ball-image";
+    ballImage.style.display = 'none';
+
+    const ballOverlay = document.createElement("div");
+    ballOverlay.className = "music-ball-overlay";
+    ballOverlay.innerHTML = '<i class="iconfont icon-play" style="font-size: 24px;"></i>';
+
+    ballRotating.appendChild(ballImage);
+    ballAlbum.append(ballRotating, ballOverlay);
+
+    // 4.5 创建展开状态封面区域（唱片效果）
+    const expandedAlbum = document.createElement("div");
+    expandedAlbum.className = "music-expanded-album";
+    expandedAlbum.style.width = `${ballSize}px`;
+    expandedAlbum.style.height = `${ballSize}px`;
+
+    const expandedRotating = document.createElement("div");
+    expandedRotating.className = "music-expanded-rotating";
+
+    const expandedBase = document.createElement("div");
+    expandedBase.className = "music-expanded-base";
+
+    const expandedImage = document.createElement("img");
+    expandedImage.className = "music-expanded-image";
+    expandedImage.style.display = 'none';
+
+    const expandedOverlay = document.createElement("div");
+    expandedOverlay.className = "music-expanded-overlay";
+    expandedOverlay.innerHTML = '<i class="iconfont icon-play" style="font-size: 24px;"></i>';
+
+    expandedRotating.append(expandedBase, expandedImage);
+    expandedAlbum.append(expandedRotating, expandedOverlay);
+
+    // 4.6 创建信息和控制区域
+    const infoSection = document.createElement("div");
+    infoSection.className = "music-info-section";
+
+    // 4.6.1 歌曲信息
+    const trackInfo = document.createElement("div");
+    trackInfo.className = "music-track-info";
+    trackInfo.innerHTML = `
+      <div class="music-artist">${window.MusicPlayerTitle || "Music Player"}</div>
+      <div class="music-title">未播放</div>
+    `;
+
+    // 4.6.2 进度条区域
+    const progressSection = document.createElement("div");
+    progressSection.className = "music-progress-section";
+    
+    const progressBar = document.createElement("div");
+    progressBar.className = "music-progress-bar";
+    progressBar.innerHTML = '<div class="music-progress-fill"></div>';
+    
+    const timeDisplay = document.createElement("div");
+    timeDisplay.className = "music-time";
+    timeDisplay.innerHTML = `
+      <span class="music-current-time">0:00</span>
+      <span class="music-total-time">0:00</span>
+    `;
+    
+    progressSection.append(progressBar, timeDisplay);
+
+    // 4.6.3 控制按钮
+    const controls = document.createElement("div");
+    controls.className = "music-controls";
+
+    const prevBtn = document.createElement("button");
+    prevBtn.className = "music-btn";
+    prevBtn.innerHTML = '<i class="iconfont icon-backward"></i>';
+    prevBtn.title = "上一曲";
+
+    const playBtn = document.createElement("button");
+    playBtn.className = "music-btn play-btn";
+    playBtn.innerHTML = '<i class="iconfont icon-play"></i>';
+    playBtn.title = "播放/暂停";
+
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "music-btn";
+    nextBtn.innerHTML = '<i class="iconfont icon-forward"></i>';
+    nextBtn.title = "下一曲";
+
+    const listBtnWrapper = document.createElement("div");
+    listBtnWrapper.style.position = "relative";
+
+    const listBtn = document.createElement("button");
+    listBtn.className = "music-btn";
+    listBtn.innerHTML = '<i class="iconfont icon-list-ul"></i>';
+    listBtn.title = "播放列表";
+
+    listBtnWrapper.appendChild(listBtn);
+
+    const volumeControl = document.createElement("div");
+    volumeControl.className = "music-volume-control";
+    
+    const volumeBtn = document.createElement("button");
+    volumeBtn.className = "music-btn";
+    volumeBtn.innerHTML = '<i class="iconfont icon-volume"></i>';
+    volumeBtn.title = "音量";
+
+    const volumeSlider = document.createElement("div");
+    volumeSlider.className = "music-volume-slider";
+    volumeSlider.innerHTML = '<input type="range" min="0" max="100" value="50">';
+
+    volumeControl.append(volumeBtn, volumeSlider);
+
+    controls.append(prevBtn, playBtn, nextBtn, listBtnWrapper, volumeControl);
+    infoSection.append(trackInfo, progressSection, controls);
+    mainSection.append(ballAlbum, expandedAlbum, infoSection);
+
+    // 4.7 创建独立的音波容器
+    const waveContainer = document.createElement("div");
+    waveContainer.className = "wave-container";
+    
+    const WAVES_COUNT = 4;
+    const waveSpeedValue = window.MusicPlayerWaveSpeed || 2.0;
+    const delayInterval = waveSpeedValue / WAVES_COUNT;
+    for (let i = 0; i < WAVES_COUNT; i++) {
+      const wave = document.createElement("div");
+      wave.className = "wave";
+      wave.style.animationDelay = `${i * delayInterval}s`;
+      waveContainer.appendChild(wave);
+    }
+
+    container.append(waveContainer, mainSection);
+
+    // 4.8 创建播放列表
+    const playlistDiv = document.createElement("div");
+    playlistDiv.className = "music-playlist";
+    
+    const playlistHeader = document.createElement("div");
+    playlistHeader.className = "music-playlist-header";
+    playlistHeader.innerHTML = `
+      <span>播放列表</span>
+      <i class="iconfont icon-close music-playlist-close"></i>
+    `;
+    
+    const playlistInner = document.createElement("div");
+    playlistInner.className = "music-playlist-inner";
+    
+    const playlistContent = document.createElement("div");
+    playlistContent.className = "music-playlist-content";
+    
+    playlistInner.appendChild(playlistContent);
+    playlistDiv.append(playlistHeader, playlistInner);
+    listBtnWrapper.appendChild(playlistDiv);
+
+    // 获取音量输入控件
+    const volumeInput = volumeSlider.querySelector('input');
+    volumeInput.value = audio.volume * 100;
+
+    // ================================================================
+    // 第五部分：播放列表功能
+    // ================================================================
+    
+    // 5.1 从API获取播放列表
+    async function loadPlaylist() {
+      try {
+        const response = await fetch(window.MusicPlayerAPIUrl);
+        const data = await response.json();
+        
+        if (data && data.data && data.data.length > 0) {
+          const coverList = window.MusicPlayerCoverList && window.MusicPlayerCoverList.length > 0
+            ? window.MusicPlayerCoverList
+            : null;
+          
+          playlist = data.data.map(item => {
+            const randomCover = coverList 
+              ? coverList[Math.floor(Math.random() * coverList.length)]
+              : null;
+            return {
+              url: item.url,
+              title: item.filename.replace(/\.[^/.]+$/, ""),
+              artist: window.MusicPlayerTitle || "Music Player",
+              cover: randomCover
+            };
+          });
+          
+          renderPlaylist();
+          
+          const randomIndex = Math.floor(Math.random() * playlist.length);
+          loadTrack(randomIndex);
+        } else {
+          console.warn("播放列表为空");
+        }
+      } catch (error) {
+        console.error("获取播放列表失败:", error);
+      }
+    }
+
+    // 5.2 渲染播放列表
+    function renderPlaylist() {
+      playlistContent.innerHTML = playlist.map((track, index) => 
+        `<div class="music-playlist-item ${index === currentIndex ? 'active' : ''}" data-index="${index}">
+          ${index + 1}. ${track.title}
+        </div>`
+      ).join('');
+
+      playlistContent.querySelectorAll('.music-playlist-item').forEach(item => {
+        item.onclick = () => {
+          const index = parseInt(item.dataset.index);
+          loadTrack(index);
+          if (isPlaying) play();
+        };
+      });
+    }
+
+    // 5.3 加载指定曲目
+    function loadTrack(index) {
+      if (playlist.length === 0) return;
+      
+      currentIndex = index;
+      const track = playlist[currentIndex];
+      
+      audio.src = track.url;
+      updateInfo({
+        title: track.title,
+        artist: track.artist,
+        cover: track.cover
+      });
+
+      playlistContent.querySelectorAll('.music-playlist-item').forEach((item, i) => {
+        item.classList.toggle('active', i === currentIndex);
+      });
+    }
+
+    // 5.4 更新歌曲信息显示
+    function updateInfo(info) {
+      if (info.title) {
+        trackInfo.querySelector(".music-title").textContent = info.title;
+      }
+      if (info.artist) {
+        trackInfo.querySelector(".music-artist").textContent = info.artist;
+      }
+      
+      if (info.cover) {
+        ballImage.src = info.cover;
+        expandedImage.src = info.cover;
+        ballImage.style.display = 'block';
+        expandedImage.style.display = 'block';
+      } else {
+        ballImage.style.display = 'none';
+        expandedImage.style.display = 'none';
+      }
+    }
+
+    // ================================================================
+    // 第六部分：播放控制功能
+    // ================================================================
+    
+    // 6.1 播放
+    function play() {
+      audio.play();
+      setPlaying(true);
+    }
+
+    // 6.2 暂停
+    function pause() {
+      audio.pause();
+      setPlaying(false);
+    }
+
+    // 6.3 上一曲
+    function prevTrack() {
+      if (playlist.length === 0) return;
+      currentIndex = (currentIndex - 1 + playlist.length) % playlist.length;
+      loadTrack(currentIndex);
+      if (isPlaying) play();
+    }
+
+    // 6.4 下一曲
+    function nextTrack() {
+      if (playlist.length === 0) return;
+      currentIndex = (currentIndex + 1) % playlist.length;
+      loadTrack(currentIndex);
+      if (isPlaying) play();
+    }
+
+    // 6.5 设置播放状态
+    function setPlaying(playing) {
+      isPlaying = playing;
+      if (playing) {
+        container.classList.add("playing");
+        playBtn.innerHTML = '<i class="iconfont icon-pause"></i>';
+        ballOverlay.innerHTML = '<i class="iconfont icon-pause" style="font-size: 24px;"></i>';
+        expandedOverlay.innerHTML = '<i class="iconfont icon-pause" style="font-size: 24px;"></i>';
+        
+        if (isExpanded && animationFrameId === null) {
+          rotateAlbum();
+        }
+      } else {
+        container.classList.remove("playing");
+        playBtn.innerHTML = '<i class="iconfont icon-play"></i>';
+        ballOverlay.innerHTML = '<i class="iconfont icon-play" style="font-size: 24px;"></i>';
+        expandedOverlay.innerHTML = '<i class="iconfont icon-play" style="font-size: 24px;"></i>';
+        
+        if (animationFrameId !== null) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+      }
+    }
+
+    // 6.6 唱片旋转动画
+    function rotateAlbum() {
+      if (isPlaying && isExpanded) {
+        const speed = window.MusicPlayerRotationSpeed || 10;
+        const degreesPerFrame = 360 / (speed * 60);
+        rotationAngle += degreesPerFrame;
+        expandedRotating.style.transform = `rotate(${rotationAngle}deg)`;
+        animationFrameId = requestAnimationFrame(rotateAlbum);
+      }
+    }
+
+    // 6.7 格式化时间
+    function formatTime(seconds) {
+      if (isNaN(seconds)) return '0:00';
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    // 6.8 更新进度条
+    function updateProgress() {
+      const progressFill = progressBar.querySelector('.music-progress-fill');
+      const currentTimeEl = timeDisplay.querySelector('.music-current-time');
+      const totalTimeEl = timeDisplay.querySelector('.music-total-time');
+      
+      const current = audio.currentTime;
+      const duration = audio.duration;
+      
+      if (duration && !isNaN(duration)) {
+        const percentage = (current / duration) * 100;
+        progressFill.style.width = `${percentage}%`;
+        currentTimeEl.textContent = formatTime(current);
+        totalTimeEl.textContent = formatTime(duration);
+      }
+    }
+
+    // ================================================================
+    // 第七部分：UI 交互功能
+    // ================================================================
+    
+    // 7.1 展开播放器
+    function expandPlayer() {
+      isExpanded = true;
+      container.classList.add("expanded");
+
+      container.style.opacity = '1';
+      clearTimeout(window._musicOpacityTimer);
+
+      ballAlbum.style.border = "none";
+
+      if (githubLink) {
+        githubLink.style.display = "flex";
+      }
+
+      if (isPlaying && animationFrameId === null) {
+        rotateAlbum();
+      }
+
+      setTimeout(() => {
+        document.addEventListener('click', handleClickOutside);
+      }, 0);
+    }
+
+    // 7.2 收起播放器
+    function collapsePlayer() {
+      isExpanded = false;
+      showPlaylist = false;
+      container.classList.remove("expanded");
+      playlistDiv.classList.remove("show");
+      clearTimeout(autoCollapseTimer);
+      
+      if (githubLink) {
+        githubLink.style.display = "none";
+      }
+      
+      updateTheme();
+      
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+      
+      document.removeEventListener('click', handleClickOutside);
+
+      startOpacityTimer();
+    }
+
+    // 7.3 启动透明度降低定时器
+    function startOpacityTimer() {
+      clearTimeout(window._musicOpacityTimer);
+      container.style.opacity = '1';
+      
+      window._musicOpacityTimer = setTimeout(() => {
+        if (!isExpanded) {
+          container.style.opacity = '0.3';
+        }
+      }, 2600);
+    }
+
+    // 7.4 重置透明度定时器
+    function resetOpacityTimer() {
+      if (!isExpanded) {
+        container.style.opacity = '1';
+        startOpacityTimer();
+      }
+    }
+
+    // 7.5 点击外部关闭
+    function handleClickOutside(e) {
+      if (!container.contains(e.target)) {
+        collapsePlayer();
+      }
+    }
+
+    // 7.6 切换播放列表
+    function togglePlaylist() {
+      showPlaylist = !showPlaylist;
+      playlistDiv.classList.toggle("show", showPlaylist);
+      
+      if (showPlaylist) {
+        // 向正上方弹出，中心线对齐
+        playlistDiv.style.bottom = '100%';
+        playlistDiv.style.left = '50%';
+        playlistDiv.style.marginLeft = '-140px'; // 列表宽度的一半 (280px / 2)
+        playlistDiv.style.marginBottom = '8px';
+        
+        setTimeout(() => {
+          document.addEventListener('click', handlePlaylistClickOutside);
+        }, 0);
+      } else {
+        document.removeEventListener('click', handlePlaylistClickOutside);
+      }
+    }
+
+    // 7.7 播放列表外部点击关闭
+    function handlePlaylistClickOutside(e) {
+      if (!playlistDiv.contains(e.target) && !listBtn.contains(e.target)) {
+        togglePlaylist();
+      }
+    }
+
+    // 7.8 更新音量滑块进度显示
+    function updateSliderProgress() {
+      const percent = volumeInput.value;
+      container.style.setProperty('--slider-percent', `${percent}%`);
+    }
+
+    // 7.9 更新音量图标
+    function updateVolumeIcon() {
+      if (audio.volume === 0) {
+        volumeBtn.innerHTML = '<i class="iconfont icon-mute"></i>';
+      } else {
+        volumeBtn.innerHTML = '<i class="iconfont icon-volume"></i>';
+      }
+    }
+
+    // ================================================================
+    // 第八部分：主题适配功能
+    // ================================================================
+    
+    function updateTheme() {
+      const theme = document.documentElement.getAttribute("data-theme");
+      const isDark =
+        theme === "dark" ||
+        document.documentElement.classList.contains("dark") ||
+        (theme !== "light" &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+      const opacity = window.MusicPlayerOpacity || 0.8;
+      const bgColor = isDark
+        ? `rgba(30, 30, 30, ${opacity})`
+        : `rgba(255, 255, 255, ${opacity})`;
+      const textColor = isDark ? "#fff" : "#333";
+      const buttonColor = isDark ? "#fff" : "#242c36";
+
+      container.style.backgroundColor = bgColor;
+      
+      const titleEl = trackInfo.querySelector(".music-title");
+      const artistEl = trackInfo.querySelector(".music-artist");
+      if (titleEl) titleEl.style.color = textColor;
+      if (artistEl) artistEl.style.color = textColor;
+      
+      [prevBtn, playBtn, nextBtn, listBtn, volumeBtn].forEach(
+        (btn) => btn && (btn.style.color = buttonColor)
+      );
+
+      if (githubLink) {
+        githubLink.style.color = buttonColor;
+      }
+
+      const sliderBg = isDark ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)";
+      const sliderFill = isDark ? "rgba(255, 255, 255, 0.8)" : "rgba(36, 44, 54, 0.8)";
+      const sliderThumb = isDark ? "#fff" : "#242c36";
+      container.style.setProperty('--slider-bg', sliderBg);
+      container.style.setProperty('--slider-fill', sliderFill);
+      container.style.setProperty('--slider-thumb', sliderThumb);
+
+      const currentStrokeWidth = window.MusicPlayerStrokeWidth || 0;
+      const currentStrokeColor = window.MusicPlayerStrokeColor ||
+        (isDark ? "#000" : "#fff");
+      
+      if (!isExpanded && currentStrokeWidth > 0) {
+        ballAlbum.style.border = `${currentStrokeWidth}px solid ${currentStrokeColor}`;
+        ballAlbum.style.boxSizing = "border-box";
+      }
+
+      const waveColor = isDark ? "rgba(255, 255, 255, 0.6)" : "rgba(0, 0, 0, 0.4)";
+      container.style.setProperty('--wave-color', waveColor);
+      
+      const initialScale = 1.0;
+      container.style.setProperty('--wave-initial-scale', initialScale);
+
+      const progressBg = isDark ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)";
+      const progressFill = isDark ? "rgba(255, 255, 255, 0.8)" : "rgba(36, 44, 54, 0.8)";
+      container.style.setProperty('--progress-bg', progressBg);
+      container.style.setProperty('--progress-fill', progressFill);
+
+      const playlistBg = isDark ? "rgba(40, 40, 40, 0.95)" : "rgba(255, 255, 255, 0.95)";
+      const playlistHeaderBg = isDark ? "rgba(40, 40, 40, 0.98)" : "rgba(255, 255, 255, 0.98)";
+      const playlistHeaderText = isDark ? "#fff" : "#333";
+      const playlistBorder = isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.08)";
+      const playlistItemText = isDark ? "rgba(255, 255, 255, 0.7)" : "#555";
+      const playlistItemBorder = isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)";
+      const playlistItemHover = isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.05)";
+      const playlistItemActiveBg = isDark ? "rgba(255, 255, 255, 0.15)" : "rgba(0, 0, 0, 0.08)";
+      const playlistItemActiveText = isDark ? "#fff" : "#333";
+
+      container.style.setProperty('--playlist-bg', playlistBg);
+      container.style.setProperty('--playlist-header-bg', playlistHeaderBg);
+      container.style.setProperty('--playlist-header-text', playlistHeaderText);
+      container.style.setProperty('--playlist-border', playlistBorder);
+      container.style.setProperty('--playlist-item-text', playlistItemText);
+      container.style.setProperty('--playlist-item-border', playlistItemBorder);
+      container.style.setProperty('--playlist-item-hover', playlistItemHover);
+      container.style.setProperty('--playlist-item-active-bg', playlistItemActiveBg);
+      container.style.setProperty('--playlist-item-active-text', playlistItemActiveText);
+    }
+
+    // ================================================================
+    // 第九部分：事件绑定
+    // ================================================================
+    
+    // 9.1 悬浮球点击事件
+    ballAlbum.onclick = () => {
+      expandPlayer();
+    };
+
+    ballAlbum.onmouseenter = () => {
+      resetOpacityTimer();
+    };
+
+    // 9.2 展开封面点击事件
+    expandedAlbum.onclick = () => {
+      if (isPlaying) {
+        pause();
+      } else {
+        play();
+      }
+    };
+
+    // 9.3 控制按钮点击事件
+    playBtn.onclick = (e) => {
+      e.stopPropagation();
+      if (isPlaying) {
+        pause();
+      } else {
+        play();
+      }
+    };
+
+    prevBtn.onclick = (e) => {
+      e.stopPropagation();
+      prevTrack();
+    };
+
+    nextBtn.onclick = (e) => {
+      e.stopPropagation();
+      nextTrack();
+    };
+
+    listBtn.onclick = (e) => {
+      e.stopPropagation();
+      togglePlaylist();
+    };
+
+    // 9.4 播放列表关闭按钮
+    const closeBtn = playlistHeader.querySelector('.music-playlist-close');
+    closeBtn.onclick = (e) => {
+      e.stopPropagation();
+      togglePlaylist();
+    };
+
+    // 9.5 音量控制事件
+    volumeInput.oninput = (e) => {
+      audio.volume = e.target.value / 100;
+      if (audio.volume > 0) {
+        lastVolume = audio.volume;
+      }
+      updateSliderProgress();
+      updateVolumeIcon();
+    };
+
+    volumeBtn.onclick = (e) => {
+      e.stopPropagation();
+      if (audio.volume === 0) {
+        audio.volume = lastVolume > 0 ? lastVolume : 0.5;
+        volumeInput.value = audio.volume * 100;
+      } else {
+        lastVolume = audio.volume;
+        audio.volume = 0;
+        volumeInput.value = 0;
+      }
+      updateSliderProgress();
+      updateVolumeIcon();
+    };
+
+    // 9.6 音频事件监听
+    audio.onended = nextTrack;
+    audio.onerror = () => {
+      console.error("音频加载失败");
+      setPlaying(false);
+    };
+    audio.ontimeupdate = updateProgress;
+    audio.onloadedmetadata = updateProgress;
+
+    // 9.7 进度条点击跳转
+    progressBar.onclick = (e) => {
+      e.stopPropagation();
+      const rect = progressBar.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const percentage = clickX / rect.width;
+      audio.currentTime = percentage * audio.duration;
+    };
+
+    // 9.8 主题变化监听
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", updateTheme);
+    document.documentElement.addEventListener("themechange", updateTheme);
+    
+    const themeObserver = new MutationObserver(updateTheme);
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme", "class"],
+    });
+
+    // ================================================================
+    // 第十部分：初始化执行
+    // ================================================================
+    
+    // 10.1 设置音波样式
+    const isMobile = window.innerWidth <= 768;
+    const waveStrokeWidth = isMobile 
+      ? (window.MusicPlayerWaveMobileStrokeWidth || "1.5px")
+      : (window.MusicPlayerWaveStrokeWidth || "2.0px");
+    container.style.setProperty('--wave-stroke-width', waveStrokeWidth);
+    
+    const waveSpeed = (window.MusicPlayerWaveSpeed || 2.4) + 's';
+    const waveScale = window.MusicPlayerWaveScale || 1.6;
+    container.style.setProperty('--wave-speed', waveSpeed);
+    container.style.setProperty('--wave-scale', waveScale);
+
+    // 10.2 加载播放列表
+    loadPlaylist();
+    
+    // 10.3 初始化滑块进度显示
+    const initialVolume = audio.volume * 100;
+    container.style.setProperty('--slider-percent', `${initialVolume}%`);
+    
+    // 10.4 初始化主题
+    updateTheme();
+
+    // 10.5 首次加载时自动展开面板
+    setTimeout(() => {
+      expandPlayer();
+      
+      const autoCollapseDelay = window.MusicPlayerAutoCollapse || 2600;
+      setTimeout(() => {
+        if (isExpanded) {
+          collapsePlayer();
+        }
+      }, autoCollapseDelay);
+    }, 100);
   }
 
-  // 事件监听
-  albumWrapper.onclick = () => {
-    if (!isExpanded) {
-      expandPlayer();
-    }
-  };
-
-  // 按钮点击事件（触发自定义事件，由外部播放器监听）
-  playBtn.onclick = () => {
-    const event = new CustomEvent('nezha-music-play-pause', { detail: { isPlaying } });
-    window.dispatchEvent(event);
-  };
-
-  prevBtn.onclick = () => {
-    const event = new CustomEvent('nezha-music-prev');
-    window.dispatchEvent(event);
-  };
-
-  nextBtn.onclick = () => {
-    const event = new CustomEvent('nezha-music-next');
-    window.dispatchEvent(event);
-  };
-
-  // 拖拽功能
-  let isDragging = false;
-  let startX, startY, startLeft, startBottom;
-
-  container.onmousedown = (e) => {
-    if (e.target.closest('.music-controls')) return;
-    isDragging = true;
-    startX = e.clientX;
-    startY = e.clientY;
-    const rect = container.getBoundingClientRect();
-    startLeft = currentSide === "left" ? rect.left : window.innerWidth - rect.right;
-    startBottom = window.innerHeight - rect.bottom;
-    container.style.transition = "none";
-  };
-
-  document.onmousemove = (e) => {
-    if (!isDragging) return;
-    const deltaX = e.clientX - startX;
-    const deltaY = startY - e.clientY;
-    
-    if (currentSide === "left") {
-      container.style.left = `${Math.max(0, Math.min(window.innerWidth - 100, startLeft + deltaX))}px`;
-    } else {
-      container.style.right = `${Math.max(0, Math.min(window.innerWidth - 100, startLeft - deltaX))}px`;
-    }
-    container.style.bottom = `${Math.max(0, Math.min(window.innerHeight - 100, startBottom + deltaY))}px`;
-  };
-
-  document.onmouseup = () => {
-    if (!isDragging) return;
-    isDragging = false;
-    container.style.transition = "";
-    
-    // 判断靠近哪一侧
-    const rect = container.getBoundingClientRect();
-    if (rect.left < window.innerWidth / 2) {
-      currentSide = "left";
-      container.style.right = "auto";
-    } else {
-      currentSide = "right";
-      container.style.left = "auto";
-    }
-  };
-
-  // 暴露API到全局，供外部播放器调用
-  window.MusicPlayerUI = {
-    setPlaying: setPlaying,
-    updateInfo: updateInfo,
-    expand: expandPlayer,
-    collapse: collapsePlayer
-  };
-
-  console.log("🎵 音乐播放器UI已加载");
-}
-
-/**
- * 使用示例：
- * 
- * // 1. 连接外部播放器后，更新播放状态
- * window.MusicPlayerUI.setPlaying(true);  // 开始播放
- * window.MusicPlayerUI.setPlaying(false); // 暂停播放
- * 
- * // 2. 更新歌曲信息
- * window.MusicPlayerUI.updateInfo({
- *   title: "歌曲名称",
- *   artist: "艺术家",
- *   cover: "封面图片URL"
- * });
- * 
- * // 3. 监听用户点击按钮
- * window.addEventListener('nezha-music-play-pause', (e) => {
- *   console.log('用户点击了播放/暂停按钮', e.detail);
- *   // 在这里调用你的播放器API
- * });
- * 
- * window.addEventListener('nezha-music-prev', () => {
- *   console.log('用户点击了上一曲');
- * });
- * 
- * window.addEventListener('nezha-music-next', () => {
- *   console.log('用户点击了下一曲');
- * });
- */
+  // ================================================================
+  // 启动播放器
+  // ================================================================
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMusicPlayer);
+  } else {
+    initMusicPlayer();
+  }
