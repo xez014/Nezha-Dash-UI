@@ -9,24 +9,95 @@
 
 <!-- 哪吒面板界面美化 - 模块化版本 -->
 <script>
+  // ------------------ 版本控制 ------------------
+  // 自动生成版本号（防止CDN缓存），每次刷新页面都会更新
+  // 如果不想每次都更新，可以手动设置固定版本号，例如: const VERSION = '1.0.0';
+  const VERSION = new Date().getTime(); // 使用时间戳作为版本号
+  
   // ------------------ 哪吒面板基础配置 ------------------
-  window.CustomBackgroundImage = "https://cdn.jsdelivr.net/gh/kamanfaiz/NeZha-UI@main/img/Wallpaper.png"; // 【PC端背景】桌面端页面的主背景图片URL
-  window.CustomMobileBackgroundImage = "https://cdn.jsdelivr.net/gh/kamanfaiz/NeZha-UI@main/img/Wallpaper.png"; // 【移动端背景】移动端页面的主背景图片URL
-  window.CustomLogo = "https://cdn.jsdelivr.net/gh/kamanfaiz/NeZha-UI@main/img/Pilgrim.png"; // 【LOGO】页面左上角的LOGO图片URL
+  window.CustomBackgroundImage = `https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/img/Wallpaper.png?v=${VERSION}`; // 【PC端背景】桌面端页面的主背景图片URL
+  window.CustomMobileBackgroundImage = `https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/img/Wallpaper.png?v=${VERSION}`; // 【移动端背景】移动端页面的主背景图片URL
+  window.CustomLogo = `https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/img/Pilgrim.png?v=${VERSION}`; // 【LOGO】页面左上角的LOGO图片URL
   window.CustomDesc = "『卍解·天鎖斬月』"; // 【描述】LOGO下方的描述文字
   window.ShowNetTransfer = true; // 【流量显示】是否在卡片上显示实时上下行流量 (true/false)
   window.ForceCardInline = false; // 【卡片排列】是否强制所有服务器卡片在同一行显示 (true/false)
   window.DisableAnimatedMan = true; // 【人物动画】是否禁用看板娘动画 (true/false)
+  window.CustomIllustration = `https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/img/Candice.png?v=${VERSION}`; // 【自定义插图】右下角的插图URL (需禁用人物动画)
   window.FixedTopServerName = false; // 【名称位置】是否将服务器名称固定在卡片顶部 (true/false)
   window.ForceTheme = ""; // 【强制主题】强制使用指定主题 ("light" 或 "dark", 留空则跟随系统)
 </script>
 
 <!-- 加载所有美化模块 (通过 jsDelivr CDN) -->
-<script src="https://cdn.jsdelivr.net/gh/kamanfaiz/NeZha-UI@main/js/navbar.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/kamanfaiz/NeZha-UI@main/js/illustration.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/kamanfaiz/NeZha-UI@main/js/ipinfo.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/kamanfaiz/NeZha-UI@main/js/click-fireworks.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/kamanfaiz/NeZha-UI@main/js/bg-rain.js"></script>
-
-<!-- 主初始化脚本 (最后加载) -->
-<script src="https://cdn.jsdelivr.net/gh/kamanfaiz/NeZha-UI@main/main.js"></script>
+<script>
+  // 动态加载JS模块，自动添加版本号
+  (function() {
+    const baseUrl = 'https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main';
+    const modules = [
+      '/js/custom-links.js',
+      '/js/illustration.js',
+      '/js/visitor-info.js',
+      '/js/fireworks.js',
+      '/js/rain.js',
+      '/js/music-player.js'
+    ];
+    
+    let loadedCount = 0;
+    
+    function loadScript(index) {
+      if (index >= modules.length) {
+        // 所有模块加载完成后，初始化
+        initNezhaUI();
+        return;
+      }
+      
+      const script = document.createElement('script');
+      script.src = baseUrl + modules[index] + '?v=' + VERSION;
+      script.onload = function() {
+        loadedCount++;
+        loadScript(index + 1);
+      };
+      script.onerror = function() {
+        console.error('❌ 加载失败:', modules[index]);
+        loadScript(index + 1);
+      };
+      document.head.appendChild(script);
+    }
+    
+    // 初始化所有模块
+    function initNezhaUI() {
+      const moduleInits = [
+        { name: '自定义链接', init: 'initCustomLinks' },
+        { name: '插图', init: 'initIllustration' },
+        { name: '访客信息', init: 'initVisitorInfo' },
+        { name: '烟花特效', init: 'initFireworks' },
+        { name: '下雨特效', init: 'initRain' },
+        { name: '音乐播放器', init: 'initMusicPlayer' }
+      ];
+      
+      let successCount = 0;
+      let failedModules = [];
+      
+      moduleInits.forEach(module => {
+        if (typeof window[module.init] === 'function') {
+          try {
+            window[module.init]();
+            successCount++;
+          } catch (error) {
+            console.error(`❌ ${module.name} 初始化失败:`, error);
+            failedModules.push(module.name);
+          }
+        } else {
+          failedModules.push(module.name);
+        }
+      });
+      
+      if (failedModules.length === 0) {
+        console.log(`🎉 Nezha-UI 加载完成 (${successCount}/${moduleInits.length})`);
+      } else {
+        console.warn('⚠️ 部分模块加载失败:', failedModules.join(', '));
+      }
+    }
+    
+    loadScript(0);
+  })();
+</script>
