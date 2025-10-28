@@ -5,7 +5,7 @@
  * =================================================================
  */
 
-  /**
+ /**
    * ================================================================
    * 音乐播放器 - 代码概览
    * ================================================================
@@ -28,13 +28,13 @@
   // ================================================================
   // 第一部分：全局配置变量
   // ================================================================
-  
+
   // 音乐播放器基础配置
   window.EnableMusicPlayer = true; // 是否启用音乐播放器（true/false）
   window.MusicPlayerBallSize = 60; // 悬浮球尺寸（单位：像素）
   window.MusicPlayerAutoCollapse = 2600; // 自动收起面板的延迟时间（单位：毫秒）
   window.MusicPlayerTitle = "Faiz's Music Player"; // 音乐播放器标题/艺术家名称
-  window.MusicPlayerAPIUrl = "https://music.588945.xyz/api/music/list"; // 音乐列表API地址，自建播放器将域名换成自己的即可
+  window.MusicPlayerAPIUrl = "https://music.588945.xyz/api/music/list"; // 音乐列表API地址
   window.MusicPlayerGitHubUrl = "https://github.com/eooce/music-player"; // GitHub仓库链接（留空则不显示图标）
   window.MusicPlayerDefaultVolume = 0.2; // 默认音量（范围：0-1）
   
@@ -540,6 +540,10 @@
     /* ==================== 播放列表 ==================== */
     .music-playlist {
       position: absolute;
+      bottom: 100%;
+      left: 50%;
+      margin-left: -140px;
+      margin-bottom: 8px;
       width: 280px;
       background: var(--playlist-bg, rgba(255, 255, 255, 0.95));
       backdrop-filter: blur(10px);
@@ -636,9 +640,6 @@
     }
   `;
     document.head.appendChild(styleSheet);
-    
-    // 强制浏览器重新计算样式，确保 CSS 已应用
-    document.body.offsetHeight;
 
     // ================================================================
     // 第三部分：核心变量声明
@@ -657,6 +658,7 @@
     
     // 定时器变量
     let autoCollapseTimer = null;
+    let isInitialAutoCollapse = false; // 标记首次自动收起是否已完成
     
     // 音量控制变量
     let lastVolume = 0.5;
@@ -1057,6 +1059,7 @@
 
       container.style.opacity = '1';
       clearTimeout(window._musicOpacityTimer);
+      clearTimeout(autoCollapseTimer);
 
       ballAlbum.style.border = "none";
 
@@ -1117,25 +1120,27 @@
       }
     }
 
-    // 7.5 点击外部关闭
+    // 7.5 取消首次自动收起（用户交互时调用）
+    function cancelInitialAutoCollapse() {
+      if (!isInitialAutoCollapse) {
+        clearTimeout(autoCollapseTimer);
+        isInitialAutoCollapse = true; // 标记首次自动收起已被取消
+      }
+    }
+
+    // 7.6 点击外部关闭
     function handleClickOutside(e) {
       if (!container.contains(e.target)) {
         collapsePlayer();
       }
     }
 
-    // 7.6 切换播放列表
+    // 7.7 切换播放列表
     function togglePlaylist() {
       showPlaylist = !showPlaylist;
       playlistDiv.classList.toggle("show", showPlaylist);
       
       if (showPlaylist) {
-        // 向正上方弹出，中心线对齐
-        playlistDiv.style.bottom = '100%';
-        playlistDiv.style.left = '50%';
-        playlistDiv.style.marginLeft = '-140px'; // 列表宽度的一半 (280px / 2)
-        playlistDiv.style.marginBottom = '8px';
-        
         setTimeout(() => {
           document.addEventListener('click', handlePlaylistClickOutside);
         }, 0);
@@ -1144,20 +1149,20 @@
       }
     }
 
-    // 7.7 播放列表外部点击关闭
+    // 7.8 播放列表外部点击关闭
     function handlePlaylistClickOutside(e) {
       if (!playlistDiv.contains(e.target) && !listBtn.contains(e.target)) {
         togglePlaylist();
       }
     }
 
-    // 7.8 更新音量滑块进度显示
+    // 7.9 更新音量滑块进度显示
     function updateSliderProgress() {
       const percent = volumeInput.value;
       container.style.setProperty('--slider-percent', `${percent}%`);
     }
 
-    // 7.9 更新音量图标
+    // 7.10 更新音量图标
     function updateVolumeIcon() {
       if (audio.volume === 0) {
         volumeBtn.innerHTML = '<i class="iconfont icon-mute"></i>';
@@ -1255,14 +1260,17 @@
     // 9.1 悬浮球点击事件
     ballAlbum.onclick = () => {
       expandPlayer();
+      cancelInitialAutoCollapse();
     };
 
     ballAlbum.onmouseenter = () => {
       resetOpacityTimer();
+      cancelInitialAutoCollapse();
     };
 
     // 9.2 展开封面点击事件
     expandedAlbum.onclick = () => {
+      cancelInitialAutoCollapse();
       if (isPlaying) {
         pause();
       } else {
@@ -1273,6 +1281,7 @@
     // 9.3 控制按钮点击事件
     playBtn.onclick = (e) => {
       e.stopPropagation();
+      cancelInitialAutoCollapse();
       if (isPlaying) {
         pause();
       } else {
@@ -1282,16 +1291,19 @@
 
     prevBtn.onclick = (e) => {
       e.stopPropagation();
+      cancelInitialAutoCollapse();
       prevTrack();
     };
 
     nextBtn.onclick = (e) => {
       e.stopPropagation();
+      cancelInitialAutoCollapse();
       nextTrack();
     };
 
     listBtn.onclick = (e) => {
       e.stopPropagation();
+      cancelInitialAutoCollapse();
       togglePlaylist();
     };
 
@@ -1299,11 +1311,13 @@
     const closeBtn = playlistHeader.querySelector('.music-playlist-close');
     closeBtn.onclick = (e) => {
       e.stopPropagation();
+      cancelInitialAutoCollapse();
       togglePlaylist();
     };
 
     // 9.5 音量控制事件
     volumeInput.oninput = (e) => {
+      cancelInitialAutoCollapse();
       audio.volume = e.target.value / 100;
       if (audio.volume > 0) {
         lastVolume = audio.volume;
@@ -1314,6 +1328,7 @@
 
     volumeBtn.onclick = (e) => {
       e.stopPropagation();
+      cancelInitialAutoCollapse();
       if (audio.volume === 0) {
         audio.volume = lastVolume > 0 ? lastVolume : 0.5;
         volumeInput.value = audio.volume * 100;
@@ -1338,13 +1353,23 @@
     // 9.7 进度条点击跳转
     progressBar.onclick = (e) => {
       e.stopPropagation();
+      cancelInitialAutoCollapse();
       const rect = progressBar.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
       const percentage = clickX / rect.width;
       audio.currentTime = percentage * audio.duration;
     };
 
-    // 9.8 主题变化监听
+    // 9.8 容器鼠标事件（取消首次自动收起，重置透明度）
+    container.onmouseenter = () => {
+      if (isExpanded) {
+        cancelInitialAutoCollapse();
+      } else {
+        resetOpacityTimer();
+      }
+    };
+
+    // 9.9 主题变化监听
     window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", updateTheme);
     document.documentElement.addEventListener("themechange", updateTheme);
     
@@ -1384,10 +1409,12 @@
     setTimeout(() => {
       expandPlayer();
       
+      // 启动一次性自动收起定时器
       const autoCollapseDelay = window.MusicPlayerAutoCollapse || 2600;
-      setTimeout(() => {
-        if (isExpanded) {
+      autoCollapseTimer = setTimeout(() => {
+        if (isExpanded && !isInitialAutoCollapse) {
           collapsePlayer();
+          isInitialAutoCollapse = true; // 标记首次自动收起已完成
         }
       }, autoCollapseDelay);
     }, 100);
