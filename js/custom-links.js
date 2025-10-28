@@ -1,7 +1,7 @@
 /**
  * =================================================================
  * Nezha-UI 自定义链接图标模块
- * @description 观察DOM变化，为导航栏的自定义链接动态添加可配置的 iconfont 图标。
+ * @description 为导航栏的自定义链接动态添加可配置的 iconfont 图标。
  * =================================================================
  */
 
@@ -18,12 +18,12 @@ window.CustomLinks = JSON.stringify([
     name: "Uptime",
     icon: "icon-hourglass-start",
   },
-]); // 【自定义链接】导航栏的自定义链接 (JSON格式), 新增 icon 字段，请确保 icon值为 iconfont.css 中真实存在的 class
+]); // 导航栏的自定义链接 (JSON格式), 新增 icon 字段，请确保 icon值为 iconfont.css 中真实存在的 class
 
 // ------------------ 顶部链接图标配置 ------------------
-window.CustomLinkIconSize = "16px"; // 【链接图标】图标大小 (例如: "16px", "1.2em")
-window.CustomLinkIconColor = ""; // 【链接图标】图标颜色 (例如: "#fff"), 留空则继承文本颜色
-window.CustomLinkIconMarginRight = "1px"; // 【链接图标】图标与文字的间距
+window.CustomLinkIconSize = "16px"; // 图标大小 (例如: "16px", "1.2em")
+window.CustomLinkIconColor = ""; // 图标颜色 (例如: "#fff"), 留空则继承文本颜色
+window.CustomLinkIconMarginRight = "1px"; // 图标与文字的间距
 
 function initCustomLinks() {
   if (!window.CustomLinks) return;
