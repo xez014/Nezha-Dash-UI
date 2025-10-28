@@ -40,16 +40,16 @@ window.MusicPlayerDefaultVolume = 0.2; // 默认音量(范围:0-1)
 
 // 封面配置
 window.MusicPlayerCoverList = [ // 封面图片列表(随机分配给歌曲)
-  "https://nzr2.952536.xyz/Cover/NumberOne.jpg",
-  "https://nzr2.952536.xyz/Cover/千の夜をこえて.jpg",
-  "https://nzr2.952536.xyz/Cover/heretostay.jpg",
-  "https://nzr2.952536.xyz/Cover/オレンジ.jpg",
-  "https://nzr2.952536.xyz/Cover/BLUE.jpg",
-  "https://nzr2.952536.xyz/Cover/velonica.jpg",
-  "https://nzr2.952536.xyz/Cover/chAngE.jpg",
-  "https://nzr2.952536.xyz/Cover/最果て.jpg",
-  "https://nzr2.952536.xyz/Cover/MONOCHROME.jpg",
-  "https://nzr2.952536.xyz/Cover/Rapport.jpg",
+  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover1.jpg",
+  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover2.jpg",
+  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover3.jpg",
+  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover4.jpg",
+  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover5.jpg",
+  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover6.jpg",
+  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover7.jpg",
+  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover8.jpg",
+  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover9.jpg",
+  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover10.jpg",
 ];
 
 // 视觉效果配置
