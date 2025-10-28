@@ -33,7 +33,7 @@
   window.EnableMusicPlayer = true; // 是否启用音乐播放器（true/false）
   window.MusicPlayerBallSize = 60; // 悬浮球尺寸（单位：像素）
   window.MusicPlayerAutoCollapse = 2600; // 自动收起面板的延迟时间（单位：毫秒）
-  window.MusicPlayerTitle = "Faiz's Music Player"; // 音乐播放器标题/艺术家名称
+  window.MusicPlayerTitle = "NeZha Music Player"; // 音乐播放器标题/艺术家名称
   window.MusicPlayerAPIUrl = "https://music.588945.xyz/api/music/list"; // 音乐列表API地址
   window.MusicPlayerGitHubUrl = "https://github.com/eooce/music-player"; // GitHub仓库链接（留空则不显示图标）
   window.MusicPlayerDefaultVolume = 0.2; // 默认音量（范围：0-1）
