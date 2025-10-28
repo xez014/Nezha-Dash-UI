@@ -1,9 +1,13 @@
-# Nezha-Dash-UI
+<div align="center">
 
-> 哪吒面板美化脚本的模块化版本，将不同功能拆分成独立的 JS 文件，便于按需加载和维护。
+# Nezha-Dash-UI
 
 [![GitHub](https://img.shields.io/badge/GitHub-kamanfaiz%2FNezha--Dash--UI-blue?logo=github)](https://github.com/kamanfaiz/Nezha-Dash-UI)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+哪吒面板美化脚本的模块化版本，将不同功能拆分成独立的 JS 文件，便于按需加载和维护。
+
+</div>
 
 ## 📁 项目结构
 
