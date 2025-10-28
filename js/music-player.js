@@ -636,6 +636,9 @@
     }
   `;
     document.head.appendChild(styleSheet);
+    
+    // 强制浏览器重新计算样式，确保 CSS 已应用
+    document.body.offsetHeight;
 
     // ================================================================
     // 第三部分：核心变量声明
