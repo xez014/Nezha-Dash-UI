@@ -9,6 +9,40 @@
 
 </div>
 
+---
+
+## 📑 目录
+
+- [🎵 音乐播放器来源](#-音乐播放器来源)
+- [📁 项目结构](#-项目结构)
+- [🚀 快速开始](#-快速开始)
+- [⚙️ 配置说明](#️-配置说明)
+  - [🎨 哪吒面板基础配置](#-哪吒面板基础配置)
+  - [📌 自定义链接](#-自定义链接-custom-linksjs)
+  - [🖼️ 插图插入](#️-插图插入-illustrationjs)
+  - [👁️ 访客信息](#️-访客信息-visitor-infojs)
+  - [🎆 烟花特效](#-烟花特效-fireworksjs)
+  - [🌧️ 下雨特效](#️-下雨特效-rainjs)
+  - [🎵 音乐播放器](#-音乐播放器-music-playerjs)
+- [📦 模块说明](#-模块说明)
+- [🎯 项目优势](#-项目优势)
+- [📝 使用说明](#-使用说明)
+- [🎨 自定义主题](#-自定义主题)
+- [🤝 贡献](#-贡献)
+- [📄 开源协议](#-开源协议)
+- [🔗 相关链接](#-相关链接)
+- [💡 致谢](#-致谢)
+
+---
+
+## 🎵 音乐播放器来源
+
+本项目中的音乐播放器模块来自 [eooce/music-player](https://github.com/eooce/music-player)，感谢原作者的精彩工作！
+
+本仓库对其进行了模块化封装，可以更方便地集成进哪吒前端面板使用。
+
+---
+
 ## 📁 项目结构
 
 ```
@@ -31,36 +65,11 @@ Nezha-Dash-UI/
 
 ## 🚀 快速开始
 
-### 方式一：直接使用（推荐）
+### 方式一：完整引入（推荐）
 
-将 `nezha@v1.html` 文件的内容复制到哪吒面板的"自定义代码"区域即可。
+将 `nezha@v1.html` 文件的内容复制到哪吒面板的"自定义代码"区域即可，已包含所有功能模块的 CDN 引入。
 
-### 方式二：使用 CDN 引入
-
-```html
-<!-- 引入阿里巴巴图标矢量库 -->
-<head>
-  <link rel="stylesheet" href="//at.alicdn.com/t/c/font_4956031_5kxc4fexu39.css" />
-</head>
-
-<!-- 哪吒面板基础配置 -->
-<script>
-  window.CustomBackgroundImage = "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/img/Wallpaper.png";
-  window.CustomLogo = "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/img/Pilgrim.png";
-  window.CustomDesc = "『卍解·天鎖斬月』";
-  // ... 更多配置见下方
-</script>
-
-<!-- 加载功能模块 -->
-<script src="https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/js/custom-links.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/js/illustration.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/js/visitor-info.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/js/fireworks.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/js/rain.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/js/music-player.js"></script>
-```
-
-### 方式三：按需引入模块
+### 方式二：按需引入模块
 
 如果只需要某些功能，可以选择性引入：
 
@@ -274,4 +283,3 @@ window.ForceTheme = "dark"; // 或 "light"
 <div align="center">
   <sub>Built with ❤️ by <a href="https://github.com/kamanfaiz">kamanfaiz</a></sub>
 </div>
-
