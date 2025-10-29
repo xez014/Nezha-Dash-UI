@@ -66,7 +66,7 @@ window.MusicPlayerWaveScale = 1.8; // 音波扩散比例（最大扩散倍数）
 
 // UI 图标配置
 window.MusicPlayerBallIconSize = 18; // 悬浮球播放/暂停图标尺寸（单位：像素）
-window.MusicPlayerExpandedAlbumSize = 60; // 展开面板唱片尺寸（单位：像素，建议比悬浮球大一些）
+window.MusicPlayerExpandedAlbumSize = 70; // 展开面板唱片尺寸（单位：像素，建议比悬浮球大一些）
 
 // ================================================================
 // 主函数：音乐播放器初始化
@@ -330,7 +330,6 @@ function initMusicPlayer() {
     opacity: 0;
     display: none;
     flex-direction: column;
-    gap: 6px; /* 歌曲信息和进度条之间的间距 */
     overflow: visible;
     align-items: stretch;
   }
@@ -345,6 +344,7 @@ function initMusicPlayer() {
     flex-direction: column;
     gap: 0px; /* 歌名和作者之间的间距 */
     align-self: stretch;
+    margin-bottom: 6px; /* 歌曲信息与进度条之间的间距 */
   }
 
   .music-title {
@@ -374,6 +374,7 @@ function initMusicPlayer() {
     gap: 4px;
     opacity: 0;
     align-self: stretch;
+    margin-bottom: 2px; /* 进度条与控制按钮之间的间距 */
   }
 
   .music-player-container.expanded .music-progress-section {
