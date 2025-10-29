@@ -11,7 +11,8 @@
 
 > **📢 声明**  
 > * 本人只是出于个人爱好进行开发，本人审美不代表全部，欢迎各位根据自己的需求进行魔改和自定义，让项目更符合你的使用场景！
-> * 由于是通过jsdelivr cdn缓存来调用的，所以对于容器类或者质量不太好的小鸡可能存在加载慢的问题，请自行组合使用。
+> * 目前仓库是通过jsdelivr cdn缓存来调用的，所以对于容器类或者质量不太好的小鸡可能存在加载慢的问题，请自行组合使用。
+> * 有条件者可以将代码放到自己的CloudFlare R2存储桶中，因为jsdelivr cdn的缓存时间过长，有时候改完代码，可能需要很久才会刷新！
 
 
 ## 📑 目录
@@ -237,6 +238,18 @@ https://purge.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/js/模块名.js
 或在引入时添加版本号：
 ```html
 <script src="https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/js/music-player.js?v=20250128"></script>
+```
+
+**💡 进阶方案：使用 Cloudflare R2 存储桶**
+
+有条件的用户可以把代码文件上传到自己的 Cloudflare R2 存储桶，优势：
+- 缓存刷新更快，可以更灵活地控制缓存策略
+- 不受 jsDelivr 限流影响
+- 可以自定义域名访问
+
+将 R2 绑定到自定义域名后，在 HTML 中引用：
+```html
+<script src="https://your-domain.com/js/music-player.js"></script>
 ```
 
 ### 浏览器兼容性
