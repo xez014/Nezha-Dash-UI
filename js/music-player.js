@@ -3,7 +3,7 @@
  * Nezha-UI 音乐播放器模块
  * @description 对接老王eooce的音乐播放器项目,创建音乐播放器,强烈推荐老王音乐播放器,感谢老王!
  * =================================================================
- */
+ */  
 
 /**
  * ================================================================
@@ -1171,13 +1171,22 @@ function initMusicPlayer() {
     }
   }
 
-  // 7.9 更新音量滑块进度显示
+  // 7.9 关闭播放列表（如果打开）
+  function closePlaylistIfOpen() {
+    if (showPlaylist) {
+      showPlaylist = false;
+      playlistDiv.classList.remove("show");
+      document.removeEventListener('click', handlePlaylistClickOutside);
+    }
+  }
+
+  // 7.10 更新音量滑块进度显示
   function updateSliderProgress() {
     const percent = volumeInput.value;
     container.style.setProperty('--slider-percent', `${percent}%`);
   }
 
-  // 7.10 更新音量图标
+  // 7.11 更新音量图标
   function updateVolumeIcon() {
     if (audio.volume === 0) {
       volumeBtn.innerHTML = '<i class="iconfont icon-mute"></i>';
@@ -1286,6 +1295,7 @@ function initMusicPlayer() {
   // 9.2 展开封面点击事件
   expandedAlbum.onclick = () => {
     cancelInitialAutoCollapse();
+    closePlaylistIfOpen();
     if (isPlaying) {
       pause();
     } else {
@@ -1293,10 +1303,19 @@ function initMusicPlayer() {
     }
   };
 
+  // 9.2.1 面板空白区域点击关闭播放列表
+  infoSection.onclick = (e) => {
+    // 如果点击的是空白区域（不是按钮、进度条等）
+    if (e.target === infoSection || e.target.closest('.music-track-info')) {
+      closePlaylistIfOpen();
+    }
+  };
+
   // 9.3 控制按钮点击事件
   playBtn.onclick = (e) => {
     e.stopPropagation();
     cancelInitialAutoCollapse();
+    closePlaylistIfOpen();
     if (isPlaying) {
       pause();
     } else {
@@ -1307,12 +1326,14 @@ function initMusicPlayer() {
   prevBtn.onclick = (e) => {
     e.stopPropagation();
     cancelInitialAutoCollapse();
+    closePlaylistIfOpen();
     prevTrack();
   };
 
   nextBtn.onclick = (e) => {
     e.stopPropagation();
     cancelInitialAutoCollapse();
+    closePlaylistIfOpen();
     nextTrack();
   };
 
@@ -1333,6 +1354,7 @@ function initMusicPlayer() {
   // 9.5 音量控制事件
   volumeInput.oninput = (e) => {
     cancelInitialAutoCollapse();
+    closePlaylistIfOpen();
     audio.volume = e.target.value / 100;
     if (audio.volume > 0) {
       lastVolume = audio.volume;
@@ -1344,6 +1366,7 @@ function initMusicPlayer() {
   volumeBtn.onclick = (e) => {
     e.stopPropagation();
     cancelInitialAutoCollapse();
+    closePlaylistIfOpen();
     if (audio.volume === 0) {
       audio.volume = lastVolume > 0 ? lastVolume : 0.5;
       volumeInput.value = audio.volume * 100;
@@ -1369,6 +1392,7 @@ function initMusicPlayer() {
   progressBar.onclick = (e) => {
     e.stopPropagation();
     cancelInitialAutoCollapse();
+    closePlaylistIfOpen();
     const rect = progressBar.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const percentage = clickX / rect.width;
