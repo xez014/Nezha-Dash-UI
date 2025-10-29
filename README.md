@@ -5,13 +5,14 @@
 [![GitHub](https://img.shields.io/badge/GitHub-kamanfaiz%2FNezha--Dash--UI-blue?logo=github)](https://github.com/kamanfaiz/Nezha-Dash-UI)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-哪吒面板美化脚本的模块化版本，将不同功能拆分成独立的 JS 文件，便于按需加载和维护。
+哪吒v1前端面板美化脚本的模块化版本，将不同功能拆分成独立的 JS 文件，可以根据自己喜好和需求自由组合搭配，分模块设计也便于按需加载和维护。
+
 </div>
 
 ---
 
 > **📢 声明**  
-> 本项目作者只是出于个人爱好进行开发，并非职业码农。  
+> 本人只是出于个人爱好进行开发，本人并非码农，只是个cv使用者。  
 > 欢迎各位根据自己的需求进行魔改和自定义，让项目更符合你的使用场景！
 
 ---
