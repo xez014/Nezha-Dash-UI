@@ -10,72 +10,72 @@
  * 音乐播放器 - 代码概览
  * ================================================================
  * 
- * 代码结构说明:
+ * 代码结构说明：
  * 
- * 第一部分:全局配置变量
- * 第二部分:CSS 样式定义
- * 第三部分:核心变量声明
- * 第四部分:UI 元素创建
- * 第五部分:播放列表功能
- * 第六部分:播放控制功能
- * 第七部分:UI 交互功能
- * 第八部分:主题适配功能
- * 第九部分:事件绑定
- * 第十部分:初始化执行
+ * 第一部分：全局配置变量
+ * 第二部分：CSS 样式定义
+ * 第三部分：核心变量声明
+ * 第四部分：UI 元素创建
+ * 第五部分：播放列表功能
+ * 第六部分：播放控制功能
+ * 第七部分：UI 交互功能
+ * 第八部分：主题适配功能
+ * 第九部分：事件绑定
+ * 第十部分：初始化执行
  * ================================================================
  */
 
 // ================================================================
-// 第一部分:全局配置变量
+// 第一部分：全局配置变量
 // ================================================================
 
 // 音乐播放器基础配置
-window.EnableMusicPlayer = true; // 是否启用音乐播放器(true/false)
-window.MusicPlayerBallSize = 50; // 悬浮球尺寸(单位:像素)
-window.MusicPlayerAutoCollapse = 2600; // 自动收起面板的延迟时间(单位:毫秒)
-window.MusicPlayerTitle = "NeZha Music Player"; // 音乐播放器标题/艺术家名称
+window.EnableMusicPlayer = true; // 是否启用音乐播放器（true/false）
+window.MusicPlayerBallSize = 50; // 悬浮球尺寸（单位：像素）
+window.MusicPlayerAutoCollapse = 2600; // 自动收起面板的延迟时间（单位：毫秒）
+window.MusicPlayerTitle = "NeZha Music Player"; // 音乐播放器标题/默认艺术家名称（当文件名无"-"时使用）
 window.MusicPlayerAPIUrl = "https://music.588945.xyz/api/music/list"; // 音乐列表API地址
-window.MusicPlayerGitHubUrl = "https://github.com/eooce/music-player"; // GitHub仓库链接(留空则不显示图标)
-window.MusicPlayerDefaultVolume = 0.2; // 默认音量(范围:0-1)
+window.MusicPlayerGitHubUrl = "https://github.com/eooce/music-player"; // GitHub仓库链接（留空则不显示图标）
+window.MusicPlayerDefaultVolume = 0.2; // 默认音量（范围：0-1）
 
 // 封面配置
-window.MusicPlayerCoverList = [ // 封面图片列表(随机分配给歌曲)
-  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover1.jpg",
-  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover2.jpg",
-  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover3.jpg",
-  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover4.jpg",
-  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover5.jpg",
-  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover6.jpg",
-  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover7.jpg",
-  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover8.jpg",
-  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover9.jpg",
+window.MusicPlayerCoverList = [ // 封面图片列表（随机分配给歌曲）
+  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover01.jpg",
+  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover02.jpg",
+  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover03.jpg",
+  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover04.jpg",
+  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover05.jpg",
+  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover06.jpg",
+  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover07.jpg",
+  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover08.jpg",
+  "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover09.jpg",
   "https://cdn.jsdelivr.net/gh/kamanfaiz/Nezha-Dash-UI@main/cover/cover10.jpg",
 ];
 
 // 视觉效果配置
-window.MusicPlayerRotationSpeed = 5; // 唱片旋转速度(数值越大转速越慢,单位:秒/圈)
-window.MusicPlayerStrokeWidth = 4.5; // 悬浮球描边宽度(单位:像素,0表示无描边)
-window.MusicPlayerStrokeColor = ""; // 悬浮球描边颜色(留空则自动适配主题:暗色模式黑色,亮色模式白色)
-window.MusicPlayerOpacity = 0.5; // 播放器面板不透明度(范围:0-1)
+window.MusicPlayerRotationSpeed = 5; // 唱片旋转速度（数值越大转速越慢，单位：秒/圈）
+window.MusicPlayerStrokeWidth = 4.5; // 悬浮球描边宽度（单位：像素，0表示无描边）
+window.MusicPlayerStrokeColor = ""; // 悬浮球描边颜色（留空则自动适配主题：暗色模式黑色，亮色模式白色）
+window.MusicPlayerOpacity = 0.5; // 播放器面板不透明度（范围：0-1）
 
 // 音波效果配置
 window.MusicPlayerWaveStrokeWidth = "2.8px"; // PC端音波圆环宽度
 window.MusicPlayerWaveMobileStrokeWidth = "1.8px"; // 移动端音波圆环宽度
-window.MusicPlayerWaveSpeed = 2.0; // 音波扩散速度(单位:秒,完整扩散一轮所需时间)
-window.MusicPlayerWaveScale = 1.6; // 音波扩散比例(最大扩散倍数)
+window.MusicPlayerWaveSpeed = 2.0; // 音波扩散速度（单位：秒，完整扩散一轮所需时间）
+window.MusicPlayerWaveScale = 1.8; // 音波扩散比例（最大扩散倍数）
 
 // UI 图标配置
-window.MusicPlayerBallIconSize = 18; // 悬浮球播放/暂停图标尺寸(单位:像素)
-window.MusicPlayerExpandedAlbumSize = 60; // 展开面板唱片尺寸(单位:像素,建议比悬浮球大一些)
+window.MusicPlayerBallIconSize = 18; // 悬浮球播放/暂停图标尺寸（单位：像素）
+window.MusicPlayerExpandedAlbumSize = 60; // 展开面板唱片尺寸（单位：像素，建议比悬浮球大一些）
 
 // ================================================================
-// 主函数:音乐播放器初始化
+// 主函数：音乐播放器初始化
 // ================================================================
 function initMusicPlayer() {
   if (!window.EnableMusicPlayer) return;
 
   // ================================================================
-  // 第二部分:CSS 样式定义
+  // 第二部分：CSS 样式定义
   // ================================================================
   const styleSheet = document.createElement("style");
   styleSheet.textContent = `
@@ -89,7 +89,7 @@ function initMusicPlayer() {
   @keyframes soundwave {
     from {
       transform: scale(1);
-      opacity: 0.9;
+      opacity: 0.95;
     }
     to {
       transform: scale(var(--wave-scale, 1.6));
@@ -140,7 +140,7 @@ function initMusicPlayer() {
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     overflow: visible; /* 允许音波超出容器 */
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.8); /* 默认值,会被 JavaScript 动态更新 */
+    background: rgba(255, 255, 255, 0.8); /* 默认值，会被 JavaScript 动态更新 */
   }
 
   .music-player-container.expanded {
@@ -168,7 +168,7 @@ function initMusicPlayer() {
     overflow: visible; /* 展开时允许内容溢出 */
   }
 
-  /* ==================== 悬浮球封面(收起状态) ==================== */
+  /* ==================== 悬浮球封面（收起状态） ==================== */
   .music-ball-album {
     position: relative;
     flex-shrink: 0;
@@ -200,7 +200,7 @@ function initMusicPlayer() {
     object-position: center;
     width: 100%;
     height: 100%;
-    transform: scale(1.001); /* 微调缩放,消除子像素渲染缝隙 */
+    transform: scale(1.001); /* 微调缩放，消除子像素渲染缝隙 */
   }
 
   .music-ball-overlay {
@@ -224,7 +224,7 @@ function initMusicPlayer() {
     opacity: 1;
   }
 
-  /* ==================== 展开状态封面(唱片效果) ==================== */
+  /* ==================== 展开状态封面（唱片效果） ==================== */
   .music-expanded-album {
     position: relative;
     flex-shrink: 0;
@@ -330,7 +330,7 @@ function initMusicPlayer() {
     opacity: 0;
     display: none;
     flex-direction: column;
-    gap: 2px;
+    gap: 6px; /* 歌曲信息和进度条之间的间距 */
     overflow: visible;
     align-items: stretch;
   }
@@ -343,7 +343,7 @@ function initMusicPlayer() {
   .music-track-info {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0px; /* 歌名和作者之间的间距 */
     align-self: stretch;
   }
 
@@ -357,11 +357,14 @@ function initMusicPlayer() {
   }
 
   .music-artist {
-    color: #666;
-    font-size: 12px;
+    color: #999;           /* 更淡的颜色 */
+    font-size: 11px;       /* 更小的字体 */
+    font-weight: 400;      /* 正常字重 */
+    opacity: 0.8;          /* 降低不透明度 */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    margin-top: 2px;       /* 与标题稍微拉开距离 */
   }
 
   /* ==================== 进度条 ==================== */
@@ -645,7 +648,7 @@ function initMusicPlayer() {
   document.head.appendChild(styleSheet);
 
   // ================================================================
-  // 第三部分:核心变量声明
+  // 第三部分：核心变量声明
   // ================================================================
   
   // 播放状态变量
@@ -674,7 +677,7 @@ function initMusicPlayer() {
   audio.volume = window.MusicPlayerDefaultVolume || 0.5;
 
   // ================================================================
-  // 第四部分:UI 元素创建
+  // 第四部分：UI 元素创建
   // ================================================================
   
   // 4.1 创建主容器
@@ -703,7 +706,7 @@ function initMusicPlayer() {
     mainSection.appendChild(githubLink);
   }
 
-  // 4.4 创建悬浮球封面区域(收起状态)
+  // 4.4 创建悬浮球封面区域（收起状态）
   const ballAlbum = document.createElement("div");
   ballAlbum.className = "music-ball-album";
   ballAlbum.style.width = `${ballSize}px`;
@@ -724,7 +727,7 @@ function initMusicPlayer() {
   ballRotating.appendChild(ballImage);
   ballAlbum.append(ballRotating, ballOverlay);
 
-  // 4.5 创建展开状态封面区域(唱片效果)
+  // 4.5 创建展开状态封面区域（唱片效果）
   const expandedAlbum = document.createElement("div");
   expandedAlbum.className = "music-expanded-album";
   const expandedAlbumSize = window.MusicPlayerExpandedAlbumSize || ballSize;
@@ -866,7 +869,7 @@ function initMusicPlayer() {
   volumeInput.value = audio.volume * 100;
 
   // ================================================================
-  // 第五部分:播放列表功能
+  // 第五部分：播放列表功能
   // ================================================================
   
   // 5.1 从API获取播放列表
@@ -884,10 +887,17 @@ function initMusicPlayer() {
           const randomCover = coverList 
             ? coverList[Math.floor(Math.random() * coverList.length)]
             : null;
+          
+          // 解析文件名：格式为 "歌曲名-作者.mp3"
+          const nameWithoutExt = item.filename.replace(/\.[^/.]+$/, "");
+          const parts = nameWithoutExt.split('-');
+          const songTitle = parts.length > 1 ? parts[0].trim() : nameWithoutExt;
+          const songArtist = parts.length > 1 ? parts.slice(1).join('-').trim() : (window.MusicPlayerTitle || "Music Player");
+          
           return {
             url: item.url,
-            title: item.filename.replace(/\.[^/.]+$/, ""),
-            artist: window.MusicPlayerTitle || "Music Player",
+            title: songTitle,
+            artist: songArtist,
             cover: randomCover
           };
         });
@@ -961,7 +971,7 @@ function initMusicPlayer() {
   }
 
   // ================================================================
-  // 第六部分:播放控制功能
+  // 第六部分：播放控制功能
   // ================================================================
   
   // 6.1 播放
@@ -998,7 +1008,7 @@ function initMusicPlayer() {
     if (playing) {
       container.classList.add("playing");
       playBtn.innerHTML = '<i class="iconfont icon-pause"></i>';
-      ballOverlay.innerHTML = `<i class="iconfont icon-pause" style="font-size: ${ballIconSize}px;"></i>`;
+      ballOverlay.innerHTML = '<i class="iconfont icon-pause" style="font-size: 24px;"></i>';
       expandedOverlay.innerHTML = '<i class="iconfont icon-pause" style="font-size: 24px;"></i>';
       
       if (isExpanded && animationFrameId === null) {
@@ -1007,7 +1017,7 @@ function initMusicPlayer() {
     } else {
       container.classList.remove("playing");
       playBtn.innerHTML = '<i class="iconfont icon-play"></i>';
-      ballOverlay.innerHTML = `<i class="iconfont icon-play" style="font-size: ${ballIconSize}px;"></i>`;
+      ballOverlay.innerHTML = '<i class="iconfont icon-play" style="font-size: 24px;"></i>';
       expandedOverlay.innerHTML = '<i class="iconfont icon-play" style="font-size: 24px;"></i>';
       
       if (animationFrameId !== null) {
@@ -1054,7 +1064,7 @@ function initMusicPlayer() {
   }
 
   // ================================================================
-  // 第七部分:UI 交互功能
+  // 第七部分：UI 交互功能
   // ================================================================
   
   // 7.1 展开播放器
@@ -1125,7 +1135,7 @@ function initMusicPlayer() {
     }
   }
 
-  // 7.5 取消首次自动收起(用户交互时调用)
+  // 7.5 取消首次自动收起（用户交互时调用）
   function cancelInitialAutoCollapse() {
     if (!isInitialAutoCollapse) {
       clearTimeout(autoCollapseTimer);
@@ -1177,7 +1187,7 @@ function initMusicPlayer() {
   }
 
   // ================================================================
-  // 第八部分:主题适配功能
+  // 第八部分：主题适配功能
   // ================================================================
   
   function updateTheme() {
@@ -1259,7 +1269,7 @@ function initMusicPlayer() {
   }
 
   // ================================================================
-  // 第九部分:事件绑定
+  // 第九部分：事件绑定
   // ================================================================
   
   // 9.1 悬浮球点击事件
@@ -1365,7 +1375,7 @@ function initMusicPlayer() {
     audio.currentTime = percentage * audio.duration;
   };
 
-  // 9.8 容器鼠标事件(取消首次自动收起,重置透明度)
+  // 9.8 容器鼠标事件（取消首次自动收起，重置透明度）
   container.onmouseenter = () => {
     if (isExpanded) {
       cancelInitialAutoCollapse();
@@ -1385,7 +1395,7 @@ function initMusicPlayer() {
   });
 
   // ================================================================
-  // 第十部分:初始化执行
+  // 第十部分：初始化执行
   // ================================================================
   
   // 10.1 设置音波样式
