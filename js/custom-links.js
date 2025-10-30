@@ -9,13 +9,13 @@
 window.CustomLinks = JSON.stringify([
   { link: "https://blog.faiz.hidns.co", name: "Blog", icon: "icon-book" },
   {
-    link: "https://t.me/Kaixa913_bot",
+    link: "https://t.me/cawesf",
     name: "Telegram",
     icon: "icon-paper-plane",
   },
   {
-    link: "https://uptime.faiz.us.kg",
-    name: "Uptime",
+    link: "https://t.me/cawesf",
+    name: "Komari",
     icon: "icon-hourglass-start",
   },
 ]); // 导航栏的自定义链接 (JSON格式), 新增 icon 字段，请确保 icon值为 iconfont.css 中真实存在的 class
@@ -83,3 +83,4 @@ if (document.readyState === 'loading') {
 } else {
   initCustomLinks();
 }
+
