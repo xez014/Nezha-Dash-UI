@@ -35,8 +35,11 @@ window.MusicPlayerBallSize = 50; // 悬浮球尺寸（单位：像素）
 window.MusicPlayerAutoCollapse = 2600; // 自动收起面板的延迟时间（单位：毫秒）
 window.MusicPlayerTitle = "NeZha Music Player"; // 音乐播放器标题/默认艺术家名称（当文件名无"-"时使用）
 window.MusicPlayerAPIUrl = "https://music.588945.xyz/api/music/list"; // 音乐列表API地址
-window.MusicPlayerGitHubUrl = "https://github.com/eooce/music-player"; // GitHub仓库链接（留空则不显示图标）
 window.MusicPlayerDefaultVolume = 0.2; // 默认音量（范围：0-1）
+
+// GitHub 链接配置
+window.MusicPlayerGitHubUrl = "https://github.com/eooce/music-player"; // GitHub仓库链接（留空或false则不显示图标）
+window.MusicPlayerGitHubIconSize = 28; // GitHub 图标容器大小（单位：像素）
 
 // 封面配置
 window.MusicPlayerCoverList = [ // 封面图片列表（随机分配给歌曲）
@@ -374,7 +377,7 @@ function initMusicPlayer() {
     gap: 4px;
     opacity: 0;
     align-self: stretch;
-    margin-bottom: 2px; /* 进度条与控制按钮之间的间距 */
+    margin-bottom: 0px; /* 进度条与控制按钮之间的间距 */
   }
 
   .music-player-container.expanded .music-progress-section {
@@ -445,10 +448,10 @@ function initMusicPlayer() {
   /* GitHub链接图标 */
   .music-github-link {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 24px;
-    height: 24px;
+    top: 10px;
+    right: 10px;
+    width: var(--github-icon-size, 24px);
+    height: var(--github-icon-size, 24px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -468,7 +471,7 @@ function initMusicPlayer() {
   }
 
   .music-github-link i {
-    font-size: 18px;
+    font-size: calc(var(--github-icon-size, 24px) * 0.75);
   }
 
   .music-btn.play-btn {
@@ -694,7 +697,10 @@ function initMusicPlayer() {
 
   // 4.3 创建 GitHub 链接图标
   let githubLink = null;
-  if (window.MusicPlayerGitHubUrl && window.MusicPlayerGitHubUrl.trim() !== "") {
+  if (window.MusicPlayerGitHubUrl && window.MusicPlayerGitHubUrl.trim() !== "" && window.MusicPlayerGitHubUrl !== false) {
+    const githubIconSize = window.MusicPlayerGitHubIconSize || 24;
+    container.style.setProperty('--github-icon-size', `${githubIconSize}px`);
+    
     githubLink = document.createElement("a");
     githubLink.className = "music-github-link";
     githubLink.href = window.MusicPlayerGitHubUrl;
@@ -928,6 +934,11 @@ function initMusicPlayer() {
         const index = parseInt(item.dataset.index);
         loadTrack(index);
         if (isPlaying) play();
+        
+        // 切换歌曲后自动关闭播放列表
+        if (showPlaylist) {
+          togglePlaylist();
+        }
       };
     });
   }
@@ -1069,7 +1080,7 @@ function initMusicPlayer() {
   // ================================================================
   
   // 7.1 展开播放器
-  function expandPlayer() {
+  function expandPlayer(enableClickOutside = true) {
     isExpanded = true;
     container.classList.add("expanded");
 
@@ -1087,9 +1098,12 @@ function initMusicPlayer() {
       rotateAlbum();
     }
 
-    setTimeout(() => {
-      document.addEventListener('click', handleClickOutside);
-    }, 0);
+    // 只有非首次展开时才添加点击外部监听
+    if (enableClickOutside) {
+      setTimeout(() => {
+        document.addEventListener('click', handleClickOutside);
+      }, 0);
+    }
   }
 
   // 7.2 收起播放器
@@ -1141,6 +1155,13 @@ function initMusicPlayer() {
     if (!isInitialAutoCollapse) {
       clearTimeout(autoCollapseTimer);
       isInitialAutoCollapse = true; // 标记首次自动收起已被取消
+      
+      // 用户首次交互后，启用点击外部收起功能
+      if (isExpanded) {
+        setTimeout(() => {
+          document.addEventListener('click', handleClickOutside);
+        }, 0);
+      }
     }
   }
 
@@ -1167,27 +1188,20 @@ function initMusicPlayer() {
 
   // 7.8 播放列表外部点击关闭
   function handlePlaylistClickOutside(e) {
-    if (!playlistDiv.contains(e.target) && !listBtn.contains(e.target)) {
+    // 排除播放列表本身、列表按钮和音量控制区域
+    const isVolumeControl = e.target.closest('.music-volume-control');
+    if (!playlistDiv.contains(e.target) && !listBtn.contains(e.target) && !isVolumeControl) {
       togglePlaylist();
     }
   }
 
-  // 7.9 关闭播放列表（如果打开）
-  function closePlaylistIfOpen() {
-    if (showPlaylist) {
-      showPlaylist = false;
-      playlistDiv.classList.remove("show");
-      document.removeEventListener('click', handlePlaylistClickOutside);
-    }
-  }
-
-  // 7.10 更新音量滑块进度显示
+  // 7.9 更新音量滑块进度显示
   function updateSliderProgress() {
     const percent = volumeInput.value;
     container.style.setProperty('--slider-percent', `${percent}%`);
   }
 
-  // 7.11 更新音量图标
+  // 7.10 更新音量图标
   function updateVolumeIcon() {
     if (audio.volume === 0) {
       volumeBtn.innerHTML = '<i class="iconfont icon-mute"></i>';
@@ -1296,7 +1310,6 @@ function initMusicPlayer() {
   // 9.2 展开封面点击事件
   expandedAlbum.onclick = () => {
     cancelInitialAutoCollapse();
-    closePlaylistIfOpen();
     if (isPlaying) {
       pause();
     } else {
@@ -1304,19 +1317,10 @@ function initMusicPlayer() {
     }
   };
 
-  // 9.2.1 面板空白区域点击关闭播放列表
-  infoSection.onclick = (e) => {
-    // 如果点击的是空白区域（不是按钮、进度条等）
-    if (e.target === infoSection || e.target.closest('.music-track-info')) {
-      closePlaylistIfOpen();
-    }
-  };
-
   // 9.3 控制按钮点击事件
   playBtn.onclick = (e) => {
     e.stopPropagation();
     cancelInitialAutoCollapse();
-    closePlaylistIfOpen();
     if (isPlaying) {
       pause();
     } else {
@@ -1327,14 +1331,12 @@ function initMusicPlayer() {
   prevBtn.onclick = (e) => {
     e.stopPropagation();
     cancelInitialAutoCollapse();
-    closePlaylistIfOpen();
     prevTrack();
   };
 
   nextBtn.onclick = (e) => {
     e.stopPropagation();
     cancelInitialAutoCollapse();
-    closePlaylistIfOpen();
     nextTrack();
   };
 
@@ -1355,7 +1357,6 @@ function initMusicPlayer() {
   // 9.5 音量控制事件
   volumeInput.oninput = (e) => {
     cancelInitialAutoCollapse();
-    closePlaylistIfOpen();
     audio.volume = e.target.value / 100;
     if (audio.volume > 0) {
       lastVolume = audio.volume;
@@ -1367,7 +1368,6 @@ function initMusicPlayer() {
   volumeBtn.onclick = (e) => {
     e.stopPropagation();
     cancelInitialAutoCollapse();
-    closePlaylistIfOpen();
     if (audio.volume === 0) {
       audio.volume = lastVolume > 0 ? lastVolume : 0.5;
       volumeInput.value = audio.volume * 100;
@@ -1393,7 +1393,6 @@ function initMusicPlayer() {
   progressBar.onclick = (e) => {
     e.stopPropagation();
     cancelInitialAutoCollapse();
-    closePlaylistIfOpen();
     const rect = progressBar.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const percentage = clickX / rect.width;
@@ -1445,9 +1444,9 @@ function initMusicPlayer() {
   // 10.4 初始化主题
   updateTheme();
 
-  // 10.5 首次加载时自动展开面板
+  // 10.5 首次加载时自动展开面板（不启用点击外部收起）
   setTimeout(() => {
-    expandPlayer();
+    expandPlayer(false); // 传入 false，首次展开不启用点击外部收起
     
     // 启动一次性自动收起定时器
     const autoCollapseDelay = window.MusicPlayerAutoCollapse || 2600;
